@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: oklch(0.85 0.05 40);
+  --color-input: oklch(0.85 0.05 40);
+  --color-ring: oklch(0.75 0.15 40);
+  --color-background: #fffafa;
+  --color-foreground: oklch(0.2 0 0);
+  --color-primary: oklch(0.7 0.25 40);
+  --color-primary-foreground: oklch(1 0 0);
+  --color-secondary: oklch(0.8 0.15 40);
+  --color-secondary-foreground: oklch(0.2 0 0);
+  --color-destructive: oklch(0.65 0.3 30);
+  --color-destructive-foreground: oklch(1 0 0);
+  --color-muted: oklch(0.9 0.05 40);
+  --color-muted-foreground: oklch(0.5 0 0);
+  --color-accent: oklch(0.75 0.2 40);
+  --color-accent-foreground: oklch(0.2 0 0);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.2 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.2 0 0);
+  --radius: 0.5rem;
+  --color-blue: #6c85d7;
+  --color-white: #f5f5f5;
+}
