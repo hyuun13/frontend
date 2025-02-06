@@ -25,5 +25,6 @@ export const transformBookDtoToBookCardVertical = (dto: {
 }): Partial<BookCardVertical> => ({
   id: dto.bookId || "",
   isbn: dto.bookIsbn || "",
+  title: "",
   status: dto.bookStatus,
 });
