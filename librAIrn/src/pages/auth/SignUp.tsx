@@ -40,10 +40,10 @@ const SignUp: React.FC = () => {
       // 이메일 중복 체크 (action: "email")
       const dupResponse = await userDupCheckService({
         targetString: userEmail,
-        action: "email",
+        action: 1,
       });
       if (dupResponse && dupResponse.isDone) {
-        // 중복이 아니라면 dupResponse.isDone === true (또는 false일 수 있는데, API 설계에 따라 판단)
+        // 중복이 아니라면 dupResponse.isDone === true
         setEmailDupOk(true);
         // 중복이 아니면 인증번호 발송
         const sendResponse = await userSendCodeService({ userEmail });
@@ -96,7 +96,7 @@ const SignUp: React.FC = () => {
     try {
       const dupResponse = await userDupCheckService({
         targetString: userLoginId,
-        action: "id",
+        action: 0,
       });
       if (dupResponse && dupResponse.isDone) {
         setIdDupOk(true);

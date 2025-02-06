@@ -1,5 +1,6 @@
 // src/utils/transformers.ts
 import type { BookCardHorizontal } from "../types/book";
+import type { BookCardVertical } from "../types/book";
 
 export const transformBookDtoToBookCardHorizontal = (dto: {
   bookId?: string;
@@ -15,4 +16,14 @@ export const transformBookDtoToBookCardHorizontal = (dto: {
   status: dto.bookStatus,
   callNumber: dto.bookSign,
   plannedReturnDate: dto.bookReturn,
+});
+
+export const transformBookDtoToBookCardVertical = (dto: {
+  bookId?: string;
+  bookIsbn?: string;
+  bookStatus?: string;
+}): Partial<BookCardVertical> => ({
+  id: dto.bookId || "",
+  isbn: dto.bookIsbn || "",
+  status: dto.bookStatus,
 });

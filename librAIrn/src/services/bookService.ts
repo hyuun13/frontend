@@ -115,7 +115,7 @@ export const bookMostService = async (
   action: number
 ): Promise<BookMostListResponseDto | null> => {
   try {
-    const response = await api.bookMost({ bookMostListRequestDto: { action } });
+    const response = await api.bookMost({ action });
     return response.data;
   } catch (error) {
     console.error("대출 순위 조회 실패:", error);
