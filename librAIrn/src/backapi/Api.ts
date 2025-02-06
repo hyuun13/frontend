@@ -14,19 +14,22 @@ import {
   ArriveZoneResetRequestDto,
   BookBorrowRequestDto,
   BookDeleteRequestDto,
-  BookInfoData,
+  BookInfoFrontData,
+  BookInfoRobotData,
   BookMostData,
-  BookMostListRequestDto,
   BookReturnRequestDto,
   BookUpdateRequestDto,
   BorrowBookData,
   CheckUnreadNoticeData,
+  CodeRequestDto,
   DeleteBookData,
   DeleteNoticeData,
   DeleteRobotData,
   GetBookDetailData,
+  GetCodeData,
   InsertRobotData,
   InsertRobotPayload,
+  LeaveUserData,
   NoticeDeleteRequestDto,
   ResetArriveZoneData,
   ReturnBookData,
@@ -45,7 +48,9 @@ import {
   UserChangeRequestDto,
   UserDupCheckData,
   UserDupCheckRequestDto,
-  UserInfoData,
+  UserInfoFrontData,
+  UserInfoRobotData,
+  UserLeaveRequestDto,
   UserLoginData,
   UserLoginRequestDto,
   UserLogoutData,
@@ -164,7 +169,24 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 사용자가 회원가입 시에 아이디 또는 이메일의 중복 확인을 할 때 사용되는 API 입니다.
+   * @description 사용자가 회원 탈퇴 시에 요청하는 API 입니다.
+   *
+   * @tags user 도메인
+   * @name LeaveUser
+   * @summary 사용자 회원 탈퇴
+   * @request POST:/api/user/leave
+   * @response `200` `LeaveUserData` OK
+   */
+  leaveUser = (data: UserLeaveRequestDto, params: RequestParams = {}) =>
+    this.request<LeaveUserData, any>({
+      path: `/api/user/leave`,
+      method: "POST",
+      body: data,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description 사용자가 회원가입 시에 아이디 또는 이메일의 중복 확인을 할 때 사용되는 API 입니다. action: 0이면 아이디, 1이면 이메일
    *
    * @tags user 도메인
    * @name UserDupCheck
@@ -249,7 +271,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 사용자가 비밀번호를 변경할 때 사용되는 API 입니다.
+   * @description 사용자가 비밀번호를 변경할 때 사용되는 API 입니다. action: 0이면 재입력, 1이면 수정
    *
    * @tags user/auth 도메인
    * @name UserChangePw
@@ -332,28 +354,39 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 로봇에서 책을 인식하고 정보를 보내는 API 입니다.
+   * @description 사용자가 대출을 하기 위해 QR 코드를 요청하는 API 입니다.
    *
-   * @tags book 도메인
-   * @name BookInfo
-   * @summary 도서 정보 조회
-   * @request GET:/api/book
-   * @response `200` `BookInfoData` OK
+   * @tags QR 코드 도메인
+   * @name GetCode
+   * @summary 사용자 QR 코드 조회
+   * @request POST:/api/code
+   * @response `200` `GetCodeData` OK
    */
-  bookInfo = (
-    query: {
-      bookId: string;
-    },
-    params: RequestParams = {},
-  ) =>
-    this.request<BookInfoData, any>({
-      path: `/api/book`,
-      method: "GET",
-      query: query,
+  getCode = (data: CodeRequestDto, params: RequestParams = {}) =>
+    this.request<GetCodeData, any>({
+      path: `/api/code`,
+      method: "POST",
+      body: data,
+      type: ContentType.Json,
       ...params,
     });
   /**
-   * @description 관리자가 도서관에 책 정보를 등록/수정할 때 사용되는 API 입니다.
+   * @description 프론트에서 저장된 책 정보를 요청하는 API 입니다.
+   *
+   * @tags book 도메인
+   * @name BookInfoFront
+   * @summary 저장된 도서 정보 요청
+   * @request GET:/api/book
+   * @response `200` `BookInfoFrontData` OK
+   */
+  bookInfoFront = (params: RequestParams = {}) =>
+    this.request<BookInfoFrontData, any>({
+      path: `/api/book`,
+      method: "GET",
+      ...params,
+    });
+  /**
+   * @description 관리자가 도서관에 책 정보를 등록/수정할 때 사용되는 API 입니다 action: 0이면 등록, 1이면 수정
    *
    * @tags book 도메인
    * @name UpdateBook
@@ -387,7 +420,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 로봇에서 책을 반납 또는 반환할 때의 API 입니다.
+   * @description 로봇에서 책을 반납 또는 반환할 때의 API 입니다. action: 0이면 회수 구역으로 이동, 1이면 회수 구역에 도착
    *
    * @tags book 도메인
    * @name ReturnBook
@@ -453,22 +486,37 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 로봇에서 사용자 바코드를 찍고 정보를 조회할 때 사용되는 API 입니다.
+   * @description 프론트에서 저장된 사용자 코드를 이용해 사용자 정보를 조회할 때 사용되는 API 입니다.
    *
    * @tags user 도메인
-   * @name UserInfo
-   * @summary 사용자 정보 조회
+   * @name UserInfoFront
+   * @summary 대출 사용자 정보 조회
    * @request GET:/api/user
-   * @response `200` `UserInfoData` OK
+   * @response `200` `UserInfoFrontData` OK
    */
-  userInfo = (
+  userInfoFront = (params: RequestParams = {}) =>
+    this.request<UserInfoFrontData, any>({
+      path: `/api/user`,
+      method: "GET",
+      ...params,
+    });
+  /**
+   * @description 로봇에서 사용자 바코드를 찍고 사용자 정보를 백엔드에 저장할 때 사용되는 API 입니다.
+   *
+   * @tags user 도메인
+   * @name UserInfoRobot
+   * @summary 대출 사용자 정보 저장
+   * @request GET:/api/user/save
+   * @response `200` `UserInfoRobotData` OK
+   */
+  userInfoRobot = (
     query: {
       userCode: string;
     },
     params: RequestParams = {},
   ) =>
-    this.request<UserInfoData, any>({
-      path: `/api/user`,
+    this.request<UserInfoRobotData, any>({
+      path: `/api/user/save`,
       method: "GET",
       query: query,
       ...params,
@@ -511,7 +559,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 사용자 또는 관리자가 도서 검색을 할 때의 API 입니다.
+   * @description 사용자 또는 관리자가 도서 검색을 할 때의 API 입니다. action: 0: 제목, 1: 작가, 2: 출판사, 3:RFID
    *
    * @tags book 도메인
    * @name SearchBook1
@@ -534,7 +582,28 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       ...params,
     });
   /**
-   * @description 사용자 화면에서 주간/월간 대출 리스트를 띄워줄 때 사용되는 API 입니다.
+   * @description 로봇에서 책을 인식하고 정보를 백엔드에 보내는 API 입니다.
+   *
+   * @tags book 도메인
+   * @name BookInfoRobot
+   * @summary 도서 정보 저장
+   * @request GET:/api/book/save
+   * @response `200` `BookInfoRobotData` OK
+   */
+  bookInfoRobot = (
+    query: {
+      bookId: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<BookInfoRobotData, any>({
+      path: `/api/book/save`,
+      method: "GET",
+      query: query,
+      ...params,
+    });
+  /**
+   * @description 사용자 화면에서 주간/월간 대출 리스트를 띄워줄 때 사용되는 API 입니다. action: 0이면 주간, 1이면 월간
    *
    * @tags book 도메인
    * @name BookMost
@@ -544,7 +613,8 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    */
   bookMost = (
     query: {
-      bookMostListRequestDto: BookMostListRequestDto;
+      /** @format int32 */
+      action: number;
     },
     params: RequestParams = {},
   ) =>
