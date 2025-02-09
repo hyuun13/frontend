@@ -1,150 +1,111 @@
-// src/pages/Home.tsx
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import Header from "../components/common/Header";
-import NavigationBar from "../components/common/NavigationBar";
 import BookCardVertical from "../components/common/BookCardVertical";
 import SearchBarv2 from "../components/common/SearchBarv2";
+import { bookMostService } from "../services/bookService";
+import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
 
 const Home: FC = () => {
-  // 예시 데이터: 신착 도서 목록
-  const newBooks = [
-    {
-      id: "1",
-      isbn: "9781234567890",
-      title: "여수의 사랑",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3247665/32476659958.20221019142626.jpg",
-      writer: "한강",
-      status: "대출 가능",
-      returnDate: "2024-04-01",
-    },
-    {
-      id: "2",
-      isbn: "9781234567891",
-      title: "소년이 온다",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3249140/32491401626.20231004072435.jpg?type=w300",
-      writer: "한강",
-      status: "대출 중",
-      returnDate: "2024-04-05",
-    },
-    {
-      id: "3",
-      isbn: "9781234567892",
-      title: "작별하지 않는다",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3243636/32436366634.20231124160335.jpg?type=w300",
-      writer: "한강",
-      status: "연체 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "4",
-      isbn: "9781234567892",
-      title: "채식주의자",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3248204/32482041666.20230725121007.jpg?type=w300",
-      writer: "한강",
-      status: "연체 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "5",
-      isbn: "9781234567892",
-      title: "흰",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3247462/32474620790.20230411162531.jpg?type=w300",
-      writer: "한강",
-      status: "연체 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "6",
-      isbn: "9781234567892",
-      title: "서랍에 저녁을...",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3246312/32463129802.20230906071157.jpg?type=w300",
-      writer: "한강",
-      status: "연체 중",
-      returnDate: "2024-04-10",
-    },
-  ];
+  const [weeklyBooks, setWeeklyBooks] = useState<any[]>([]);
+  const [monthlyBooks, setMonthlyBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 예시 데이터: 베스트 대출 도서 목록
-  const bestBooks = [
-    {
-      id: "3",
-      isbn: "9781234567892",
-      title: "작별하지 않는다",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3243636/32436366634.20231124160335.jpg?type=w300",
-      writer: "한강",
-      status: "대출 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "4",
-      isbn: "9781234567892",
-      title: "채식주의자",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3248204/32482041666.20230725121007.jpg?type=w300",
-      writer: "한강",
-      status: "대출 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "5",
-      isbn: "9781234567892",
-      title: "흰",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3247462/32474620790.20230411162531.jpg?type=w300",
-      writer: "한강",
-      status: "연체 중",
-      returnDate: "2024-04-10",
-    },
-    {
-      id: "6",
-      isbn: "9781234567892",
-      title: "서랍에 저녁을...",
-      coverImageUrl:
-        "https://shopping-phinf.pstatic.net/main_3246312/32463129802.20230906071157.jpg?type=w300",
-      writer: "한강",
-      status: "대출 중",
-      returnDate: "2024-04-10",
-    },
-  ];
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // 주간 최다 대출 도서 가져오기
+        const weeklyResponse = await bookMostService(0); // action: 0은 주간
+        const monthlyResponse = await bookMostService(1); // action: 1은 월간
+
+        const enrichBookData = async (book: any) => {
+          const kakaoBookDetails = await fillBookDetailsKakao({
+            isbn: book.bookIsbn,
+          });
+
+          return {
+            id: book.bookId,
+            isbn: book.bookIsbn,
+            status: book.bookStatus,
+            title: kakaoBookDetails.title || "제목 없음",
+            coverImageUrl: kakaoBookDetails.coverImageUrl || "/placeholder.svg",
+          };
+        };
+
+        const filledWeeklyBooks = weeklyResponse?.bookRankList
+          ? await Promise.all(weeklyResponse.bookRankList.map(enrichBookData))
+          : [];
+
+        const filledMonthlyBooks = monthlyResponse?.bookRankList
+          ? await Promise.all(monthlyResponse.bookRankList.map(enrichBookData))
+          : [];
+
+        setWeeklyBooks(filledWeeklyBooks);
+        setMonthlyBooks(filledMonthlyBooks);
+      } catch (err) {
+        console.error("대출 순위 데이터를 가져오는 중 오류 발생:", err);
+        setError("대출 순위를 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <SearchBarv2 />
       <main className="container px-4 py-4 mx-auto">
-        {/* 신착 도서 목록 섹션 (좌우 스크롤) */}
-        <section className="mb-10">
-          <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
-            신착 도서
-          </h2>
-          <div className="flex pb-4 space-x-4 overflow-x-auto">
-            {newBooks.map((book) => (
-              <div key={book.id} className="flex-shrink-0">
-                <BookCardVertical {...book} />
+        {error && <p className="text-red-500">{error}</p>}
+        {loading ? (
+          <p className="text-gray-600">로딩 중...</p>
+        ) : (
+          <>
+            {/* 주간 최다 대출 도서 섹션 */}
+            <section className="mb-10">
+              <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
+                주간 최다 대출 도서
+              </h2>
+              <div className="flex pb-4 space-x-4 overflow-x-auto">
+                {weeklyBooks.map((book) => (
+                  <div key={book.id} className="flex-shrink-0">
+                    <BookCardVertical
+                      id={book.id}
+                      isbn={book.isbn}
+                      title={book.title}
+                      coverImageUrl={book.coverImageUrl}
+                      status={book.status}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-        {/* 베스트 대출 도서 목록 섹션 (좌우 스크롤) */}
-        <section>
-          <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
-            베스트 대출 도서
-          </h2>
-          <div className="flex pb-4 space-x-4 overflow-x-auto">
-            {bestBooks.map((book) => (
-              <div key={book.id} className="flex-shrink-0">
-                <BookCardVertical {...book} />
+            </section>
+
+            {/* 월간 최다 대출 도서 섹션 */}
+            <section>
+              <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
+                월간 최다 대출 도서
+              </h2>
+              <div className="flex pb-4 space-x-4 overflow-x-auto">
+                {monthlyBooks.map((book) => (
+                  <div key={book.id} className="flex-shrink-0">
+                    <BookCardVertical
+                      id={book.id}
+                      isbn={book.isbn}
+                      title={book.title}
+                      coverImageUrl={book.coverImageUrl}
+                      status={book.status}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

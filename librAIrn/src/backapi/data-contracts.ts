@@ -56,6 +56,17 @@ export interface UserRecordResponseDto {
   userRecordList?: UserRecordDto[];
 }
 
+export interface UserRobotRequestDto {
+  /** @format int32 */
+  robotId?: number;
+  userCode?: string;
+}
+
+export interface UserRobotResponseDto {
+  message?: string;
+  isDone?: boolean;
+}
+
 export interface UserLeaveRequestDto {
   /** @format int32 */
   userId?: number;
@@ -64,6 +75,18 @@ export interface UserLeaveRequestDto {
 export interface UserLeaveResponseDto {
   message?: string;
   isDone?: boolean;
+}
+
+export interface UserFrontRequestDto {
+  /** @format int32 */
+  robotId?: number;
+}
+
+export interface UserFrontResponseDto {
+  /** @format int32 */
+  userId?: number;
+  userName?: string;
+  userStatus?: string;
 }
 
 export interface UserDupCheckRequestDto {
@@ -111,14 +134,14 @@ export interface UserLogoutResponseDto {
 }
 
 export interface UserLoginRequestDto {
-  userLoginId?: string;
-  userPassword?: string;
+  userLoginId: string;
+  userPassword: string;
 }
 
 export interface UserLoginResponseDto {
   /** @format int32 */
-  userId?: number;
-  userName?: string;
+  userId: number;
+  userName: string;
 }
 
 export interface UserChangeRequestDto {
@@ -204,19 +227,45 @@ export interface BookUpdateResponseDto {
   isDone?: boolean;
 }
 
-export interface BookReturnRequestDto {
+export interface BookFrontRequestDto {
+  /** @format int32 */
+  robotId?: number;
+}
+
+export interface BookFrontResponseDto {
+  bookIsbn?: string;
+  bookStatus?: string;
+}
+
+export interface BookReturnStartRequestDto {
   bookId?: string;
   /** @format int32 */
   robotId?: number;
-  /**
-   * 0: 운빈 시작, 1: 운반 종료
-   * @format int32
-   * @example 0
-   */
-  action?: number;
 }
 
-export interface BookReturnResponseDto {
+export interface BookReturnStartResponseDto {
+  /** @format int32 */
+  arriveZoneId?: number;
+}
+
+export interface BookRobotRequestDto {
+  /** @format int32 */
+  robotId?: number;
+  bookId?: string;
+}
+
+export interface BookRobotResponseDto {
+  message?: string;
+  isDone?: boolean;
+}
+
+export interface BookReturnEndRequestDto {
+  bookId?: string;
+  /** @format int32 */
+  robotId?: number;
+}
+
+export interface BookReturnEndResponseDto {
   message?: string;
   isDone?: boolean;
 }
@@ -240,18 +289,6 @@ export interface ArriveZoneResetRequestDto {
 }
 
 export interface ArriveZoneResetResponseDto {
-  message?: string;
-  isDone?: boolean;
-}
-
-export interface UserFrontResponseDto {
-  /** @format int32 */
-  userId?: number;
-  userName?: string;
-  userStatus?: string;
-}
-
-export interface UserRobotResponseDto {
   message?: string;
   isDone?: boolean;
 }
@@ -302,13 +339,6 @@ export interface NewNoticeResponseDto {
   newNoticeNumber?: number;
 }
 
-export interface BookFrontResponseDto {
-  bookIsbn?: string;
-  bookStatus?: string;
-  /** @format int32 */
-  arriveZoneId?: number;
-}
-
 export interface BookDto {
   bookId?: string;
   bookIsbn?: string;
@@ -321,11 +351,6 @@ export interface BookDto {
 
 export interface BookSearchResponseDto {
   bookList?: BookDto[];
-}
-
-export interface BookRobotResponseDto {
-  message?: string;
-  isDone?: boolean;
 }
 
 export interface BookMostListResponseDto {
@@ -409,7 +434,11 @@ export type UserSignUpData = UserSignUpResponseDto;
 
 export type SearchBookData = UserRecordResponseDto;
 
+export type UserInfoRobotData = UserRobotResponseDto;
+
 export type LeaveUserData = UserLeaveResponseDto;
+
+export type UserInfoFrontData = UserFrontResponseDto;
 
 export type UserDupCheckData = UserDupCheckResponseDto;
 
@@ -434,13 +463,17 @@ export type DeleteNoticeData = NoticeDeleteResponseDto;
 /** @format byte */
 export type GetCodeData = string;
 
-export type BookInfoFrontData = BookFrontResponseDto;
-
 export type UpdateBookData = BookUpdateResponseDto;
 
 export type DeleteBookData = BookDeleteResponseDto;
 
-export type ReturnBookData = BookReturnResponseDto;
+export type BookInfoFrontData = BookFrontResponseDto;
+
+export type ReturnBookStartData = BookReturnStartResponseDto;
+
+export type BookInfoRobotData = BookRobotResponseDto;
+
+export type ReturnBookEndData = BookReturnEndResponseDto;
 
 export type BorrowBookData = BookBorrowResponseDto;
 
@@ -448,17 +481,11 @@ export type ArriveZoneInfoData = ArriveZoneResponseDto;
 
 export type ResetArriveZoneData = ArriveZoneResetResponseDto;
 
-export type UserInfoFrontData = UserFrontResponseDto;
-
-export type UserInfoRobotData = UserRobotResponseDto;
-
 export type ShowRobotLogData = RobotLogResponseDto;
 
 export type CheckUnreadNoticeData = NewNoticeResponseDto;
 
 export type SearchBook1Data = BookSearchResponseDto;
-
-export type BookInfoRobotData = BookRobotResponseDto;
 
 export type BookMostData = BookMostListResponseDto;
 

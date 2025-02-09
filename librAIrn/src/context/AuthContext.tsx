@@ -1,44 +1,68 @@
-import { createContext, useState, ReactNode, useContext } from "react";
-import type { User } from "../types/user";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { userLoginService } from "../services/userService";
+import { User } from "../types/user";
+import { useNavigate } from "react-router-dom";
 
-interface AuthState {
+interface AuthContextType {
   user: User | null;
-  token: string | null;
-}
-
-interface AuthContextType extends AuthState {
-  login: (user: User, token: string) => void;
+  login: (loginId: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateUser: (user: User) => void;
 }
-
-const initialAuthState: AuthState = {
-  user: null,
-  token: null,
-};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [auth, setAuth] = useState<AuthState>(initialAuthState);
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
 
-  const login = (user: User, token: string) => {
-    setAuth({ user, token });
-    // 인증 토큰 저장 로직 (예: localStorage에도 저장)
-    localStorage.setItem("token", token);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser)); // 로그인 상태 유지
+    }
+  }, []);
+
+  const login = async (loginId: string, password: string): Promise<boolean> => {
+    try {
+      const result = await userLoginService({
+        userLoginId: loginId,
+        userPassword: password,
+      });
+      if (result) {
+        const loggedInUser: User = {
+          id: result.userId,
+          name: result.userName,
+          status: "",
+        };
+        setUser(loggedInUser);
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
+        localStorage.setItem("isAuthenticated", "true");
+        navigate("/");
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("로그인 오류:", error);
+      return false;
+    }
   };
 
   const logout = () => {
-    setAuth({ user: null, token: null });
-    localStorage.removeItem("token");
-  };
-
-  const updateUser = (user: User) => {
-    setAuth((prev) => ({ ...prev, user }));
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuthenticated");
+    navigate("/login"); // 로그아웃 후 로그인 페이지로 이동
   };
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

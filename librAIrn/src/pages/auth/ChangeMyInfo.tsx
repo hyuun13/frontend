@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { userChangePwService } from "../../services/userService";
+import { changePasswordService } from "../../services/userService";
 
 const ChangeMyInfo: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -21,7 +21,7 @@ const ChangeMyInfo: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await userChangePwService({
+      const response = await changePasswordService({
         userId: String(user.id),
         userPassword,
         action,

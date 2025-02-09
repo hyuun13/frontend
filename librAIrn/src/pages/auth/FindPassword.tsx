@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { userSearchPwService } from "../../services/userService";
+import { searchPasswordService } from "../../services/userService";
 
 const FindPassword: React.FC = () => {
   const [userLoginId, setUserLoginId] = useState("");
@@ -15,7 +15,7 @@ const FindPassword: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await userSearchPwService({ userLoginId, userBirth });
+      const response = await searchPasswordService({ userLoginId, userBirth });
       if (response && response.isDone) {
         setResultMessage("임시 비밀번호가 이메일로 발송되었습니다.");
       } else {

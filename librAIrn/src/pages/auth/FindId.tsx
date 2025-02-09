@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { userSearchIdService } from "../../services/userService";
+import { searchIdService } from "../../services/userService";
 
 const FindId: React.FC = () => {
   const [userEmail, setUserEmail] = useState("");
@@ -14,7 +14,7 @@ const FindId: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await userSearchIdService({ userEmail });
+      const response = await searchIdService({ userEmail });
       if (response && response.isDone) {
         setResultMessage("아이디가 성공적으로 발송되었습니다.");
       } else {

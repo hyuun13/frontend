@@ -1,69 +1,72 @@
-// src/components/common/NavigationBar.tsx
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import {
+  Home,
+  QrCode,
+  BookMarked,
+  User,
+  Bot,
+  MapPinned,
+  BookPlus,
+} from "lucide-react";
 
-interface NavigationBarProps {
-  isAdmin: boolean; // 관리자인지 여부를 나타내는 prop
-}
+const NavigationBar: FC = () => {
+  const { user } = useAuth();
 
-const NavigationBar: FC<NavigationBarProps> = ({ isAdmin }) => {
+  // 관리자 여부 확인
+  const isAdmin = user && user.id >= 1 && user.id <= 5;
+
   return (
-    <nav className="p-4 bg-gray-200 shadow">
-      <ul className="flex justify-center space-x-6">
+    <nav className="bg-blue-500 p-4 text-white shadow-md">
+      <ul className="flex space-x-6 items-center">
+        <li className="flex items-center space-x-2">
+          <Home size={18} />
+          <Link to="/" className="hover:underline">
+            홈
+          </Link>
+        </li>
+
         {isAdmin ? (
+          // 관리자 전용 네비게이션
           <>
-            <li>
-              <Link to="/" className="text-gray-700 hover:text-blue-600">
-                홈
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/admin/books"
-                className="text-gray-700 hover:text-blue-600"
-              >
+            <li className="flex items-center space-x-2">
+              <BookPlus size={18} />
+              <Link to="/book-management" className="hover:underline">
                 도서 관리
               </Link>
             </li>
-            <li>
-              <Link
-                to="/admin/robots"
-                className="text-gray-700 hover:text-blue-600"
-              >
+            <li className="flex items-center space-x-2">
+              <Bot size={18} />
+              <Link to="/robot-management" className="hover:underline">
                 로봇 관리
               </Link>
             </li>
-            <li>
-              <Link
-                to="/admin/collection"
-                className="text-gray-700 hover:text-blue-600"
-              >
+            <li className="flex items-center space-x-2">
+              <MapPinned size={18} />
+              <Link to="/collection-status" className="hover:underline">
                 회수 현황
               </Link>
             </li>
           </>
         ) : (
+          // 일반 사용자 네비게이션
           <>
-            <li>
-              <Link to="/" className="text-gray-700 hover:text-blue-600">
-                홈
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/mybookshelf"
-                className="text-gray-700 hover:text-blue-600"
-              >
+            <li className="flex items-center space-x-2">
+              <BookMarked size={18} />
+              <Link to="/bookshelf" className="hover:underline">
                 내 책장
               </Link>
             </li>
-            <li>
-              <Link to="/barcode" className="text-gray-700 hover:text-blue-600">
+            <li className="flex items-center space-x-2">
+              <QrCode size={18} />
+              <Link to="/qrcode" className="hover:underline">
                 바코드
               </Link>
             </li>
-            <li>
-              <Link to="/profile" className="text-gray-700 hover:text-blue-600">
+            <li className="flex items-center space-x-2">
+              <User size={18} />
+              <Link to="/my" className="hover:underline">
                 마이
               </Link>
             </li>

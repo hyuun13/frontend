@@ -5,13 +5,12 @@ import type {
   BookUpdateResponseDto,
   BookDeleteRequestDto,
   BookDeleteResponseDto,
-  BookReturnRequestDto,
-  BookReturnResponseDto,
   BookBorrowRequestDto,
   BookBorrowResponseDto,
-  BookResponseDto,
   BookSearchResponseDto,
   // BookMostListRequestDto,
+  BookFrontRequestDto,
+  BookInfoFrontData,
   BookDetailResponseDto,
   BookMostListResponseDto,
 } from "../backapi/data-contracts";
@@ -44,19 +43,6 @@ export const deleteBookService = async (
   }
 };
 
-/** 도서 반납/반환 */
-export const returnBookService = async (
-  data: BookReturnRequestDto
-): Promise<BookReturnResponseDto | null> => {
-  try {
-    const response = await api.returnBook(data);
-    return response.data;
-  } catch (error) {
-    console.error("도서 반납/반환 실패:", error);
-    return null;
-  }
-};
-
 /** 도서 대출 */
 export const borrowBookService = async (
   data: BookBorrowRequestDto
@@ -70,15 +56,17 @@ export const borrowBookService = async (
   }
 };
 
-/** 도서 정보 조회 (로봇) */
-export const fetchBookInfo = async (query: {
-  bookId: string;
-}): Promise<BookResponseDto | null> => {
+/**
+ * 대출하려는 도서 정보를 요청하는 서비스
+ */
+export const fetchBookInfoFront = async (
+  payload: BookFrontRequestDto
+): Promise<BookInfoFrontData | null> => {
   try {
-    const response = await api.bookInfo(query);
+    const response = await api.bookInfoFront(payload);
     return response.data;
   } catch (error) {
-    console.error("도서 정보 조회 실패:", error);
+    console.error("대출 도서 정보 요청 실패:", error);
     return null;
   }
 };

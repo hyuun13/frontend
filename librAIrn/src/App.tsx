@@ -1,6 +1,7 @@
 // src/App.tsx
+import { AuthProvider } from "./context/AuthContext";
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import FindId from "./pages/auth/FindId";
@@ -15,33 +16,40 @@ import CollectionStatus from "./pages/admin/CollectionStatus";
 import NotificationPage from "./pages/admin/NotificationPage";
 import BookRegistration from "./pages/admin/BookRegistration";
 import BookDetails from "./pages/BookDetails";
-
-import { AuthProvider } from "./context/AuthContext";
+import Standby from "./pages/admin/RobotHome";
+import MyBookShelf from "./pages/MyBookshelf";
+import QrcodePage from "./pages/Barcode";
+import MyPage from "./pages/MyPage";
+import RobotHome from "./pages/admin/RobotHome";
 import { NotificationProvider } from "./context/NotificationContext";
-import Header from "./components/common/Header";
+import ResponsiveNavigation from "./components/common/NavigationBar";
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/find-id" element={<FindId />} />
-            <Route path="/find-password" element={<FindPassword />} />
-            <Route path="/change-my-info" element={<ChangeMyInfo />} />
-            <Route path="/admin/robot" element={<RobotManagement />} />
-            <Route path="/admin/robot/:id" element={<RobotDetails />} />
-            <Route path="/admin/robot/add" element={<RobotRegistration />} />
-            <Route path="/admin/collection" element={<CollectionStatus />} />
-            <Route path="/admin/notification" element={<NotificationPage />} />
-            <Route path="/admin/add" element={<BookRegistration />} />
-            <Route path="/book/:id" element={<BookDetails />} />
-          </Routes>
-        </Router>
+        <ResponsiveNavigation />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/find-id" element={<FindId />} />
+          <Route path="/find-password" element={<FindPassword />} />
+          <Route path="/change-my-info" element={<ChangeMyInfo />} />
+          <Route path="/admin/robot" element={<RobotManagement />} />
+          <Route path="/admin/robot/:id" element={<RobotDetails />} />
+          <Route path="/admin/robot/add" element={<RobotRegistration />} />
+          <Route path="/admin/collection" element={<CollectionStatus />} />
+          <Route path="/admin/notification" element={<NotificationPage />} />
+          <Route path="/admin/add" element={<BookRegistration />} />
+          <Route path="/book/:id" element={<BookDetails />} />
+          <Route path="/robot" element={<Standby />} />
+          <Route path="/bookshelf" element={<MyBookShelf />} />
+          <Route path="/qrcode" element={<QrcodePage />} />
+          <Route path="/my" element={<MyPage />} />
+          <Route path="/robothome" element={<RobotHome />} />
+        </Routes>
       </NotificationProvider>
     </AuthProvider>
   );
