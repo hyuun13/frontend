@@ -63,13 +63,12 @@ const NotificationPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 bg-gray-100">
+    <div className="min-h-screen py-8 bg-snow">
       <div className="container px-4 mx-auto">
-        <h2 className="mb-6 text-3xl font-bold">알림</h2>
         {loading ? (
           <p>로딩 중...</p>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <p className="text-orange">{error}</p>
         ) : notices.length === 0 ? (
           <p>알림이 없습니다.</p>
         ) : (

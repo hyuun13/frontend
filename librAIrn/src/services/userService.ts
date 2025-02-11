@@ -20,7 +20,6 @@ import {
   UserChangePwData,
   UserRecordDto,
   UserRecordResponseDto,
-  CodeRequestDto,
   UserInfoFrontData,
   UserFrontRequestDto,
 } from "../backapi/data-contracts";

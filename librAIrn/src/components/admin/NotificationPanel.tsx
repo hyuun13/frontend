@@ -23,7 +23,7 @@ const NotificationPanel: FC<NotificationPanelProps> = ({
           </div>
           <button
             onClick={() => onDelete(notice.id)}
-            className="absolute text-xl leading-none text-red-500 top-2 right-2 hover:text-red-700"
+            className="absolute text-xl leading-none text-orange top-2 right-2 hover:text-orange-hover"
             aria-label="삭제"
           >
             &times;

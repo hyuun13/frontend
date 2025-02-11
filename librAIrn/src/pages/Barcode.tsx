@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { fetchUserQrCode } from "../services/userService";
 import { useAuth } from "../hooks/useAuth";
-import Header from "../components/common/Header";
 
 const QrcodePage: FC = () => {
   const { user } = useAuth();
@@ -57,7 +56,6 @@ const QrcodePage: FC = () => {
 
   return (
     <div>
-      <Header />
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-6 text-2xl font-bold">회원 QR코드</h2>
         {loading ? (

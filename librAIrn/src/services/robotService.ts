@@ -10,6 +10,7 @@ import type {
   DeleteRobotData,
   ShowRobotLogData,
 } from "../backapi/data-contracts";
+import axios from "axios";
 
 const api = new Api();
 
@@ -17,10 +18,13 @@ const api = new Api();
 export const fetchRobotList = async (): Promise<RobotResponseDto | null> => {
   try {
     const response = await api.showRobotList();
-    return response.data;
+    if (response.data && Array.isArray(response.data.robotList)) {
+      return response.data;
+    }
+    throw new Error("로봇 리스트 데이터가 유효하지 않습니다.");
   } catch (error) {
-    console.error("로봇 리스트 조회 실패:", error);
-    return null;
+    console.error("로봇 리스트 불러오기 실패:", error);
+    throw error;
   }
 };
 
@@ -74,4 +78,8 @@ export const fetchRobotLog = async (
     console.error("로봇 활동 로그 조회 실패:", error);
     return null;
   }
+};
+export const fetchRobotStatus = async (robotId: number) => {
+  const response = await axios.get(`/api/robot/status?robotId=${robotId}`);
+  return response.data;
 };

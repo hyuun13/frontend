@@ -2,7 +2,6 @@
 import { FC, useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { insertRobotService } from "../../services/robotService";
-import Header from "../../components/common/Header";
 const RobotRegistration: FC = () => {
   const navigate = useNavigate();
 
@@ -62,11 +61,10 @@ const RobotRegistration: FC = () => {
 
   return (
     <div>
-      <Header></Header>
-      <div className="min-h-screen py-8 bg-gray-100">
+      <div className="min-h-screen py-8 bg-snow">
         <div className="container max-w-lg px-4 mx-auto">
           <h2 className="mb-6 text-3xl font-bold text-center">로봇 추가</h2>
-          <form onSubmit={handleSubmit} className="p-6 bg-white rounded shadow">
+          <form onSubmit={handleSubmit} className="p-6 rounded shadow bg-snow">
             {error && <p className="mb-4 text-red-500">{error}</p>}
             <div className="mb-4">
               <label
@@ -104,7 +102,7 @@ const RobotRegistration: FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 text-white transition bg-primary hover:bg-accent"
+              className="w-full py-2 transition text-snow bg-primary hover:bg-accent"
             >
               {loading ? "등록 중..." : "로봇 등록"}
             </button>

@@ -3,7 +3,6 @@ import { fetchUserRecords } from "../services/userService";
 import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";
 import BookCardHorizontalComponent from "../components/common/BookCardHorizontal";
-import Header from "../components/common/Header";
 import { useAuth } from "../hooks/useAuth";
 import dayjs from "dayjs";
 
@@ -58,9 +57,7 @@ const MyBookShelf: FC = () => {
 
   return (
     <div>
-      <Header />
-      <div className="container max-w-4xl px-4 mx-auto mt-8 min-h-screen">
-        <h2 className="mb-4 text-3xl font-bold">내 책장</h2>
+      <div className="container max-w-4xl min-h-screen px-4 mx-auto mt-8">
         {error && <p className="text-red-500">{error}</p>}
         {loading ? (
           <div className="space-y-4">

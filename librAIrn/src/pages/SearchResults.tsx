@@ -8,7 +8,6 @@ import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
 import BookCardHorizontalComponent from "../components/common/BookCardHorizontal";
 import SearchBarv2 from "../components/common/SearchBarv2";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";
-import Header from "../components/common/Header";
 
 // Skeleton UI 컴포넌트 (실제 카드와 유사한 크기 및 레이아웃)
 const BookCardSkeleton: FC = () => {
@@ -71,10 +70,9 @@ const SearchResults: FC = () => {
 
   return (
     <div>
-      <Header></Header>
-      <div className="min-h-screen">
+      <div className="min-h-screen pt-10">
         <SearchBarv2 />
-        <div className="container max-w-4xl px-4 mx-auto">
+        <div className="container max-w-2xl px-4 mx-auto">
           <h2 className="mt-6 mb-2 text-2xl font-bold">
             <span className="font-bold text-primary">'{searchStr}'</span>
             <span>에 대한 검색 결과</span>
@@ -84,7 +82,7 @@ const SearchResults: FC = () => {
 
           {loading ? (
             // 로딩 중일 때 여러 개의 Skeleton UI 렌더링(예시: 5개)
-            <div className="space-y-6">
+            <div className="space-y-6 ">
               {[...Array(5)].map((_, idx) => (
                 <BookCardSkeleton key={idx} />
               ))}

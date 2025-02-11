@@ -2,7 +2,10 @@
 import type { BookCardHorizontal } from "../types/book";
 import type { BookCardVertical } from "../types/book";
 import { User } from "../types/user";
-import { UserLoginResponseDto } from "../backapi/data-contracts";
+import {
+  UserLoginResponseDto,
+  BookFrontResponseDto,
+} from "../backapi/data-contracts";
 
 /**
  * UserLoginResponseDto를 User로 변환합니다.
@@ -48,4 +51,15 @@ export const transformBookDtoToBookCardVertical = (dto: {
   isbn: dto.bookIsbn || "",
   title: "",
   status: dto.bookStatus,
+});
+
+// 백엔드 응답을 BookCardVertical 타입으로 변환하는 함수
+export const mapToBookCardVertical = (
+  book: BookFrontResponseDto
+): Partial<BookCardVertical> => ({
+  id: "",
+  isbn: book.bookIsbn || "",
+  title: "정보 없음", // 없으면 나중에 네이버로 채움
+  coverImageUrl: "/placeholder.svg",
+  status: book.bookStatus || "정보 없음",
 });

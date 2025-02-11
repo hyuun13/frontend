@@ -1,5 +1,4 @@
 import { FC, useEffect, useState } from "react";
-import Header from "../components/common/Header";
 import ProfileCard from "../components/user/ProfileCard";
 import { useAuth } from "../hooks/useAuth";
 import { fetchUserRecords } from "../services/userService";
@@ -64,7 +63,6 @@ const MyPage: FC = () => {
 
   return (
     <div>
-      <Header />
       <div className="container max-w-4xl px-4 py-8 mx-auto">
         <ProfileCard
           userName={user.name}
@@ -73,7 +71,7 @@ const MyPage: FC = () => {
         />
 
         {/* 메뉴 섹션 */}
-        <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
+        <div className="p-4 mt-6 bg-white rounded-lg shadow-md">
           <ul className="space-y-4">
             <li>
               <button

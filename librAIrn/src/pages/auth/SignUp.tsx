@@ -7,6 +7,7 @@ import {
   sendOtpService,
   verifyOtpService,
 } from "../../services/userService";
+import { isValidPassword, isValidName } from "../../utils/validators";
 
 interface ToastProps {
   message: string;
@@ -15,7 +16,7 @@ interface ToastProps {
 
 const Toast: React.FC<ToastProps> = ({ message, type }) => (
   <div
-    className={`fixed bottom-4 right-4 px-4 py-2 rounded-md text-white ${type === "success" ? "bg-blue" : "bg-red-500"} transition-opacity duration-300`}
+    className={`fixed bottom-4 right-4 px-4 py-2 rounded-md text-white ${type === "success" ? "bg-blue" : "bg-orange"} transition-opacity duration-300`}
   >
     {message}
   </div>
@@ -30,14 +31,27 @@ const SignUpPage = () => {
     otp: "",
     loginId: "",
     password: "",
+    confirmPassword: "",
     name: "",
     birthdate: "",
   });
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isLoginIdChecked, setIsLoginIdChecked] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastProps | null>(null);
-
+  // 비밀번호가 입력될 때마다 조건에 맞는지 즉시 확인
+  useEffect(() => {
+    if (formData.password.length > 0) {
+      if (!isValidPassword(formData.password)) {
+        setPasswordError(
+          "비밀번호는 최소 8자, 하나 이상의 특수문자, 숫자, 대문자가 포함되어야 합니다."
+        );
+      } else {
+        setPasswordError(null);
+      }
+    }
+  }, [formData.password]);
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
@@ -53,6 +67,15 @@ const SignUpPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === "password") {
+      if (!isValidPassword(e.target.value)) {
+        setPasswordError(
+          "비밀번호는 최소 8자, 하나 이상의 특수문자, 숫자, 대문자가 포함되어야 합니다."
+        );
+      } else {
+        setPasswordError(null);
+      }
+    }
   };
 
   const handleEmailCheck = async () => {
@@ -120,6 +143,20 @@ const SignUpPage = () => {
   };
 
   const handleSignUp = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      showToast("비밀번호가 일치하지 않습니다.", "error");
+      return;
+    }
+
+    if (passwordError) {
+      showToast(passwordError, "error");
+      return;
+    }
+
+    if (!isValidName(formData.name)) {
+      showToast("이름은 한글 또는 영문만 입력할 수 있습니다.", "error");
+      return;
+    }
     try {
       const result = await userSignUpService({
         userLoginId: formData.loginId,
@@ -130,7 +167,7 @@ const SignUpPage = () => {
       });
       if (result) {
         showToast("회원가입이 완료되었습니다.", "success");
-        setTimeout(() => navigate("/"), 3000); // 3초 후 '/' 경로로 이동
+        setTimeout(() => navigate("/"), 2000); // 3초 후 '/' 경로로 이동
       } else {
         showToast("회원가입에 실패했습니다. 다시 시도해 주세요.", "error");
       }
@@ -144,7 +181,12 @@ const SignUpPage = () => {
       case 1:
         return isEmailChecked && isOtpVerified;
       case 2:
-        return isLoginIdChecked && formData.password.length >= 8;
+        return (
+          isLoginIdChecked &&
+          formData.password.length >= 8 &&
+          formData.password === formData.confirmPassword &&
+          !passwordError
+        );
       case 3:
         return formData.name && formData.birthdate;
       default:
@@ -184,7 +226,7 @@ const SignUpPage = () => {
                     name="email"
                     type="email"
                     required
-                    className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary"
+                    className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="이메일을 입력하세요"
                     value={formData.email}
                     onChange={handleChange}
@@ -194,7 +236,7 @@ const SignUpPage = () => {
                     type="button"
                     onClick={handleEmailCheck}
                     disabled={isEmailChecked || !formData.email}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     확인
                   </button>
@@ -214,7 +256,7 @@ const SignUpPage = () => {
                       name="otp"
                       type="text"
                       required
-                      className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary"
+                      className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="인증번호를 입력하세요"
                       value={formData.otp}
                       onChange={handleChange}
@@ -224,7 +266,7 @@ const SignUpPage = () => {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={isOtpVerified}
-                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       인증번호 발송
                     </button>
@@ -233,7 +275,7 @@ const SignUpPage = () => {
                     type="button"
                     onClick={handleOtpVerification}
                     disabled={isOtpVerified || !formData.otp}
-                    className="mt-2 w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-2 w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     인증번호 확인
                   </button>
@@ -248,7 +290,7 @@ const SignUpPage = () => {
                   htmlFor="loginId"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  로그인 아이디
+                  아이디
                 </label>
                 <div className="flex space-x-2">
                   <input
@@ -257,7 +299,7 @@ const SignUpPage = () => {
                     type="text"
                     required
                     className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="로그인 아이디를 선택하세요"
+                    placeholder="아이디를 입력하세요"
                     value={formData.loginId}
                     onChange={handleChange}
                     disabled={isLoginIdChecked}
@@ -266,7 +308,7 @@ const SignUpPage = () => {
                     type="button"
                     onClick={handleLoginIdCheck}
                     disabled={isLoginIdChecked || !formData.loginId}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     확인
                   </button>
@@ -287,6 +329,27 @@ const SignUpPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="비밀번호를 입력하세요"
                   value={formData.password}
+                  onChange={handleChange}
+                />
+                {passwordError && (
+                  <p className="mt-1 text-red-500 text-sm">{passwordError}</p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  비밀번호 확인
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="비밀번호를 다시 입력하세요"
+                  value={formData.confirmPassword}
                   onChange={handleChange}
                 />
               </div>
@@ -355,7 +418,7 @@ const SignUpPage = () => {
                 type="button"
                 onClick={handleSignUp}
                 disabled={!isStepValid()}
-                className="px-4 py-2 bg-blue text-white rounded-md hover:bg-blue focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue text-white rounded-md hover:bg-blue-hover focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 회원가입
               </button>

@@ -2,7 +2,7 @@
 
 // 기본 도서 정보 인터페이스
 export interface BookBase {
-  id: string; // 책 고유 식별자 (book id)
+  id?: string; // 책 고유 식별자 (book id)
   isbn: string; // ISBN 번호
   title: string; // 책 제목
   coverImageUrl: string; // 책 표지 URL (필수 또는 옵션)

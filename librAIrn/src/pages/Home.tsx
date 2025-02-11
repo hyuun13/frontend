@@ -1,15 +1,30 @@
-import { FC, useEffect, useState } from "react";
-import Header from "../components/common/Header";
+import { FC, useEffect, useState, useRef } from "react";
 import BookCardVertical from "../components/common/BookCardVertical";
 import SearchBarv2 from "../components/common/SearchBarv2";
 import { bookMostService } from "../services/bookService";
 import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
+import { useToast } from "../hooks/useToast";
+import { useLocation } from "react-router-dom";
 
 const Home: FC = () => {
   const [weeklyBooks, setWeeklyBooks] = useState<any[]>([]);
   const [monthlyBooks, setMonthlyBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast(); // 전역 토스트 사용
+  const location = useLocation(); // React Router로 전달된 메시지 접근
+  const toastShownRef = useRef(false);
+
+  // 비밀번호 변경 메시지 표시
+  useEffect(() => {
+    if (location.state && !toastShownRef.current) {
+      const { message, type } = location.state as {
+        message: string;
+        type: "success" | "error";
+      };
+      showToast(message, type);
+    }
+  }, [location.state, showToast]);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -47,19 +62,19 @@ const Home: FC = () => {
       } catch (err) {
         console.error("대출 순위 데이터를 가져오는 중 오류 발생:", err);
         setError("대출 순위를 불러오는 중 오류가 발생했습니다.");
+        showToast("도서 데이터를 가져오는 중 오류가 발생했습니다.", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchBooks();
-  }, []);
+  }, [showToast]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen bg-snow mt-10">
       <SearchBarv2 />
-      <main className="container px-4 py-4 mx-auto">
+      <main className="container px-4 py-4 mx-auto bg-snow">
         {error && <p className="text-red-500">{error}</p>}
         {loading ? (
           <p className="text-gray-600">로딩 중...</p>

@@ -1,5 +1,6 @@
-// src/pages/admin/CollectionStatus.tsx
-import { FC, useState, useEffect } from "react";
+import { type FC, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { RefreshCw, AlertCircle } from "lucide-react";
 import {
   fetchArriveZoneInfo,
   resetArriveZoneService,
@@ -65,34 +66,67 @@ const CollectionStatus: FC = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 bg-gray-100">
+    <div className="min-h-screen py-12 bg-snow">
       <div className="container px-4 mx-auto">
-        {/* 페이지 제목만 표시 */}
-        <h2 className="mb-6 text-3xl font-bold">회수현황</h2>
         {loading ? (
-          <p>로딩 중...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : areas.length === 0 ? (
-          <p>회수 구역 정보가 없습니다.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {areas.map((area) => (
-              <div key={area.arriveZoneId} className="relative">
-                <CollectionAreaCard
-                  areaName={area.arriveZoneName}
-                  bookCount={area.arriveZoneBook}
-                  updateTime={area.arriveZoneTime}
-                />
-                <button
-                  onClick={() => handleReset(area.arriveZoneId)}
-                  className="absolute px-2 py-1 text-xs text-white rounded bg-primary top-2 right-2 hover:bg-accent"
-                >
-                  리셋
-                </button>
-              </div>
-            ))}
+          <div className="flex items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
+            >
+              <RefreshCw className="w-12 h-12 text-blue" />
+            </motion.div>
           </div>
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-4 rounded-lg bg-snow"
+          >
+            <div className="flex items-center text-red-700">
+              <AlertCircle className="w-6 h-6 mr-2" />
+              <p>{error}</p>
+            </div>
+          </motion.div>
+        ) : areas.length === 0 ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-gray-600"
+          >
+            회수 구역 정보가 없습니다.
+          </motion.p>
+        ) : (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {areas.map((area) => (
+                <motion.div key={area.arriveZoneId} layout className="relative">
+                  <CollectionAreaCard
+                    areaName={area.arriveZoneName}
+                    bookCount={area.arriveZoneBook}
+                    updateTime={area.arriveZoneTime}
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 1.0 }}
+                    onClick={() => handleReset(area.arriveZoneId)}
+                    className="absolute px-3 py-1 text-sm font-medium text-white transition-colors duration-200 rounded-full bg-primary hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 top-2 right-2"
+                  >
+                    리셋
+                  </motion.button>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>

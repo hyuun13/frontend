@@ -27,16 +27,18 @@ const SearchBarv2: FC = () => {
   return (
     <div className="w-full max-w-2xl px-4 mx-auto">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="flex items-center w-full my-3 transition-colors bg-white border border-gray-500 rounded-full hover:border-gray-200">
+        <div className="flex items-center w-full my-3 transition-colors bg-white rounded-full border-3 border-peach hover:border-orange">
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowFilter(!showFilter)}
               className="flex items-center px-4 py-2.5 text-gray-700 hover:text-gray-900 transition-colors gap-2"
             >
-              <span className="text-sm font-medium">{selectedFilter}</span>
+              <span className="text-sm font-medium text-orange">
+                {selectedFilter}
+              </span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ease-in-out ${showFilter ? "rotate-180" : ""}`}
+                className={`w-4 h-4 text-peach transition-transform duration-200 ease-in-out ${showFilter ? "rotate-180" : ""}`}
               />
             </button>
 
@@ -53,7 +55,7 @@ const SearchBarv2: FC = () => {
                     }}
                     className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
                       selectedFilter === filter.name
-                        ? "text-primary font-medium"
+                        ? "text-orange font-medium"
                         : "text-gray-700"
                     }`}
                   >
@@ -89,7 +91,7 @@ const SearchBarv2: FC = () => {
             type="submit"
             className="p-2 mr-1 transition-colors rounded-full hover:bg-gray-50"
           >
-            <Search className="w-5 h-5 text-gray-500" />
+            <Search className="w-5 h-5 text-peach" />
           </button>
         </div>
       </form>

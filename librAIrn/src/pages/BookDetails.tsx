@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { useBookDetails } from "../hooks/useBookDetails";
 import { formatDate } from "../utils/formatters";
 import { DetailedBook } from "../types/book";
-import Header from "../components/common/Header";
 
 const LoadingState: FC = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -67,7 +66,6 @@ const BookDetail: FC = () => {
 
   return (
     <div>
-      <Header />
       <div className="relative min-h-screen p-4 overflow-hidden bg-transparent sm:p-6 lg:p-8">
         <BlurryBackground imageUrl={book.coverImageUrl} />
         <div className="container relative z-10 mx-auto">
@@ -137,7 +135,7 @@ const BookInfo: FC<{ book: DetailedBook }> = ({ book }) => {
               : "text-primary font-bold"
           }
         />
-        <InfoItem label="등록번호" value={book.id} />
+        <InfoItem label="등록번호" value={book.id ?? "정보 없음"} />
         {book.plannedReturnDate && (
           <InfoItem
             label="반납예정일"
