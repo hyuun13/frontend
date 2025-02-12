@@ -35,47 +35,16 @@ const BookDetail: FC = () => {
           plannedReturnDate: response.bookReturn,
         };
 
-        // 캐시에 존재하면 즉시 사용하고 최신 대출 상태만 업데이트
         if (isbnCache.current.has(initialBookData.isbn)) {
-          const cachedData = isbnCache.current.get(initialBookData.isbn);
           setBook({
             ...initialBookData,
-            ...cachedData,
+            ...isbnCache.current.get(initialBookData.isbn),
           });
-
-          // 최신 대출 상태만 갱신
-          const updatedStatus = await fetchBookDetails(id);
-
-          if (!updatedStatus) {
-            setError("도서 정보를 찾을 수 없습니다.");
-            setLoading(false);
-            return;
-          }
-
-          setBook((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  status: updatedStatus.bookStatus ?? "상태 정보 없음",
-                }
-              : null
-          );
-
-          setLoading(false);
-
-          return;
+        } else {
+          const naverData = await fillBookDetailsNaver(initialBookData);
+          if (naverData) isbnCache.current.set(initialBookData.isbn, naverData);
+          setBook({ ...initialBookData, ...naverData });
         }
-
-        // 백엔드 및 Naver API 요청 병렬 처리
-        const [naverData] = await Promise.all([
-          fillBookDetailsNaver(initialBookData),
-        ]);
-
-        if (naverData) {
-          isbnCache.current.set(initialBookData.isbn, naverData);
-        }
-
-        setBook({ ...initialBookData, ...naverData });
       } catch (err) {
         console.error("도서 상세 정보 조회 실패:", err);
         setError("도서 정보를 불러오는데 실패했습니다.");
@@ -87,7 +56,7 @@ const BookDetail: FC = () => {
     fetchDetails();
   }, [id]);
 
-  if (loading) return <SkeletonBookDetail />;
+  if (loading) return <LoadingSpinner />;
   if (error) return <StatusMessage message={error} type="error" />;
   if (!book)
     return (
@@ -95,79 +64,58 @@ const BookDetail: FC = () => {
     );
 
   return (
-    <div className="relative min-h-screen p-4 overflow-hidden bg-transparent sm:p-6 lg:p-8">
-      <BlurryBackground imageUrl={book.coverImageUrl} />
-      <div className="container relative z-10 mx-auto">
-        <div className="md:flex md:items-center md:space-x-6">
-          <BookCover imageUrl={book.coverImageUrl} title={book.title} />
-          <div className="w-full overflow-hidden transition-all duration-300 bg-white shadow-xl backdrop-blur-md rounded-xl hover:shadow-xl">
-            <BookInfo book={book} />
-          </div>
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-transparent sm:p-6 lg:p-8">
+      <div className="container relative z-10 mx-auto flex flex-col md:flex-row items-center space-x-6">
+        <BookCover imageUrl={book.coverImageUrl} title={book.title} />
+        <div className="w-full max-w-2xl bg-white shadow-xl backdrop-blur-md rounded-xl p-6 md:p-8">
+          <BookInfo book={book} />
         </div>
       </div>
     </div>
   );
 };
 
-const BlurryBackground: FC<{ imageUrl: string }> = ({ imageUrl }) => (
-  <div
-    className="absolute inset-0 bg-center bg-no-repeat bg-cover opacity-50 blur-xl"
-    style={{ backgroundImage: `url(${imageUrl})` }}
-  />
-);
-
 const BookCover: FC<{ imageUrl: string; title: string }> = ({
   imageUrl,
   title,
 }) => (
-  <div className="flex items-center justify-center p-8 md:w-2/5 lg:w-1/3">
-    <div className="w-full max-w-[300px] aspect-[3/4] rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={title}
-          className="object-cover w-full h-full"
-        />
-      ) : (
-        <div className="flex items-center justify-center w-full h-full bg-white">
-          <span className="text-gray-500">이미지 없음</span>
-        </div>
-      )}
-    </div>
+  <div className="w-full max-w-[300px] md:w-1/3 aspect-[3/4] rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+    {imageUrl ? (
+      <img src={imageUrl} alt={title} className="object-cover w-full h-full" />
+    ) : (
+      <div className="flex items-center justify-center w-full h-full bg-gray-200 text-gray-500">
+        이미지 없음
+      </div>
+    )}
   </div>
 );
 
 const BookInfo: FC<{ book: DetailedBook }> = ({ book }) => (
-  <div className="p-9 md:p-8">
-    <h1 className="mb-2 text-3xl font-bold text-gray-900">{book.title}</h1>
-    <p className="mb-2 text-xl font-semibold text-gray-800">{book.writer}</p>
-    <p className="mb-4 text-sm text-gray-600">
-      {book.publisher}
-      {book.publisher && book.publishDate && " · "}
+  <div>
+    <h1 className="text-3xl font-bold text-gray-900 mb-2">{book.title}</h1>
+    <p className="text-xl font-semibold text-gray-800 mb-2">{book.writer}</p>
+    <p className="text-sm text-gray-600 mb-4">
+      {book.publisher} {book.publisher && book.publishDate && " · "}{" "}
       {book.publishDate && formatDate(book.publishDate)}
     </p>
-    <div className="mb-6 space-y-2">
-      <InfoItem label="청구기호" value={book.callNumber ?? "정보 없음"} />
-      <InfoItem label="도서상태" value={book.status} />
-      <InfoItem
-        label="반납예정일"
-        value={
-          book.plannedReturnDate ? formatDate(book.plannedReturnDate) : "없음"
-        }
-      />
-      <InfoItem label="등록번호" value={book.id ?? "정보 없음"} />
-    </div>
+    <InfoItem label="청구기호" value={book.callNumber ?? "정보 없음"} />
+    <InfoItem label="도서상태" value={book.status} />
+    <InfoItem
+      label="반납예정일"
+      value={
+        book.plannedReturnDate ? formatDate(book.plannedReturnDate) : "없음"
+      }
+    />
+    <InfoItem label="등록번호" value={book.id ?? "정보 없음"} />
     {book.description && (
-      <p className="text-sm leading-relaxed text-gray-700">
-        {book.description}
-      </p>
+      <p className="text-sm text-gray-700 mt-4">{book.description}</p>
     )}
   </div>
 );
 
 const InfoItem: FC<{ label: string; value: string }> = ({ label, value }) => (
   <p className="text-sm">
-    <span className="mr-2 font-medium text-gray-600">{label}:</span>
+    <span className="font-medium text-gray-600 mr-2">{label}:</span>
     <span className="text-gray-800">{value}</span>
   </p>
 );
@@ -188,12 +136,9 @@ const StatusMessage: FC<{
   );
 };
 
-const SkeletonBookDetail: FC = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen space-y-6">
-    <div className="w-40 h-60 bg-gray-200 animate-pulse rounded-lg" />
-    <div className="w-64 h-6 bg-gray-200 animate-pulse rounded" />
-    <div className="w-48 h-4 bg-gray-200 animate-pulse rounded" />
-    <div className="w-32 h-4 bg-gray-200 animate-pulse rounded" />
+const LoadingSpinner: FC = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

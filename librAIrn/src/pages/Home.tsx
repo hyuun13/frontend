@@ -110,7 +110,7 @@ const SkeletonSection: FC<{ title: string }> = ({ title }) => (
   <section className="mb-10">
     <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">{title}</h2>
     <div className="flex pb-4 space-x-4 overflow-x-auto">
-      {[...Array(10)].map((_, i) => (
+      {[...Array(5)].map((_, i) => (
         <div
           key={i}
           className="w-40 h-56 bg-gray-200 animate-pulse rounded-lg"
