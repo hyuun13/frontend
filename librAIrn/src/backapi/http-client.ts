@@ -72,7 +72,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
-      baseURL: "http://43.200.7.229",
+      baseURL: "/api",
       // baseURL: import.meta.env.VITE_API_BASE_URL || "http://43.200.7.229",
       // baseURL: axiosConfig.baseURL || "/v1",
       // baseURL: "/v1",
