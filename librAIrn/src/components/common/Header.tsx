@@ -107,7 +107,7 @@ const Header: FC = () => {
   return (
     <header className="sticky top-0 z-50 shadow-sm bg-snow">
       <div className="container px-4 mx-auto">
-        <div className="flex items-center justify-between py-4">
+        <div className="flex items-center justify-between py-4 sm:py-2">
           <div className="flex items-center space-x-2">
             {location.pathname !== "/" && (
               <motion.button
