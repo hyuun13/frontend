@@ -1,4 +1,3 @@
-// api/kakao.ts
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
@@ -18,17 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: { Authorization: `KakaoAK ${process.env.KAKAO_API_KEY}` },
     });
 
-    const bookData = response.data?.documents?.[0] || null;
-    if (!bookData) {
-      return res.status(404).json({ error: "Book not found" });
-    }
-
-    res.status(200).json(bookData);
-  } catch (error: any) {
-    console.error(
-      "Kakao API 호출 실패:",
-      error.response?.data || error.message
-    );
-    res.status(500).json({ error: "Failed to fetch book data" });
+    res.status(200).json(response.data.documents[0] || null);
+  } catch (error) {
+    console.error("Kakao API 호출 실패:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }
