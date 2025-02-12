@@ -66,7 +66,7 @@ const BookDetail: FC = () => {
 
   return (
     <div>
-      <div className="relative min-h-screen p-4 overflow-hidden bg-transparent sm:p-6 lg:p-8">
+      <div className="relative min-h-screen p-4 overflow-hidden bg-transparent mt-10 sm:p-6 lg:p-8">
         <BlurryBackground imageUrl={book.coverImageUrl} />
         <div className="container relative z-10 mx-auto">
           <div className="md:flex md:items-center md:space-x-6">
