@@ -14,8 +14,6 @@ const Home: FC = () => {
   const { showToast } = useToast();
   const location = useLocation();
   const toastShownRef = useRef(false);
-
-  // ISBN 캐시를 활용해 중복 요청 방지
   const isbnCache = useRef(new Map());
 
   useEffect(() => {
@@ -33,16 +31,13 @@ const Home: FC = () => {
     const fetchBooks = async () => {
       setLoading(true);
       setError(null);
-
       try {
-        // 📌 주간 & 월간 데이터 병렬로 가져오기
         const [weeklyResponse, monthlyResponse] = await Promise.all([
           bookMostService(0),
           bookMostService(1),
         ]);
 
-        // 📌 ISBN 캐시를 활용한 데이터 변환 함수
-        const enrichBookData = async (book: any) => {
+        const processBookData = async (book: any) => {
           if (isbnCache.current.has(book.bookIsbn)) {
             return {
               ...isbnCache.current.get(book.bookIsbn),
@@ -63,17 +58,16 @@ const Home: FC = () => {
             coverImageUrl: kakaoBookDetails.coverImageUrl || "/placeholder.svg",
           };
 
-          isbnCache.current.set(book.bookIsbn, bookData); // 캐시에 저장
+          isbnCache.current.set(book.bookIsbn, bookData);
           return bookData;
         };
 
-        // 📌 Kakao API 병렬 실행
         const [filledWeeklyBooks, filledMonthlyBooks] = await Promise.all([
           weeklyResponse?.bookRankList
-            ? Promise.all(weeklyResponse.bookRankList.map(enrichBookData))
+            ? Promise.all(weeklyResponse.bookRankList.map(processBookData))
             : [],
           monthlyResponse?.bookRankList
-            ? Promise.all(monthlyResponse.bookRankList.map(enrichBookData))
+            ? Promise.all(monthlyResponse.bookRankList.map(processBookData))
             : [],
         ]);
 
@@ -96,7 +90,6 @@ const Home: FC = () => {
       <SearchBarv2 />
       <main className="container px-4 py-4 mx-auto bg-snow">
         {error && <p className="text-red-500">{error}</p>}
-
         {loading ? (
           <>
             <SkeletonSection title="주간 최다 대출 도서" />
@@ -104,9 +97,7 @@ const Home: FC = () => {
           </>
         ) : (
           <>
-            {/* 주간 최다 대출 도서 섹션 */}
             <BookSection title="주간 최다 대출 도서" books={weeklyBooks} />
-            {/* 월간 최다 대출 도서 섹션 */}
             <BookSection title="월간 최다 대출 도서" books={monthlyBooks} />
           </>
         )}
@@ -115,12 +106,11 @@ const Home: FC = () => {
   );
 };
 
-// 📌 스켈레톤 UI 컴포넌트
 const SkeletonSection: FC<{ title: string }> = ({ title }) => (
   <section className="mb-10">
     <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">{title}</h2>
     <div className="flex pb-4 space-x-4 overflow-x-auto">
-      {[...Array(5)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <div
           key={i}
           className="w-40 h-56 bg-gray-200 animate-pulse rounded-lg"
@@ -130,7 +120,6 @@ const SkeletonSection: FC<{ title: string }> = ({ title }) => (
   </section>
 );
 
-// 📌 도서 섹션 컴포넌트
 const BookSection: FC<{ title: string; books: any[] }> = ({ title, books }) => (
   <section className="mb-10">
     <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">{title}</h2>
