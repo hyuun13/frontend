@@ -20,7 +20,7 @@ const BookCardVertical: FC<BookCardVertical> = ({
           <img
             src={coverImageUrl}
             alt={title}
-            className="object-cover w-full h-40 mb-2 rounded-lg"
+            className="object-contain w-full h-40 mb-2 rounded-lg"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-48 mb-2 bg-gray-300">
