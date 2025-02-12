@@ -14,16 +14,16 @@ const BookCardVertical: FC<BookCardVertical> = ({
   };
 
   return (
-    <div className="w-40 p-2" onClick={handleClick}>
+    <div className="w-36 p-2" onClick={handleClick}>
       <div className="transition-shadow duration-300 ease-in-out bg-white shadow-md rounded-xl hover:shadow-lg">
         {coverImageUrl ? (
           <img
             src={coverImageUrl}
             alt={title}
-            className="object-contain w-full h-40 mb-2 rounded-lg"
+            className="object-cover w-full aspect-[2/3] mb-2 rounded-lg"
           />
         ) : (
-          <div className="flex items-center justify-center w-full h-48 mb-2 bg-gray-300">
+          <div className="flex items-center justify-center w-full aspect-[2/3] mb-2 bg-gray-300 rounded-lg">
             <span className="text-gray-600">No Image</span>
           </div>
         )}
