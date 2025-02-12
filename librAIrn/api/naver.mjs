@@ -1,7 +1,6 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -17,15 +16,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         params: { query: isbn, display: 1 },
         headers: {
-          "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID!,
-          "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRET!,
+          "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID,
+          "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRET,
         },
       }
     );
 
-    res.status(200).json(response.data.items[0] || null);
+    return res.status(200).json(response.data.items[0] || null);
   } catch (error) {
-    console.error("네이버 책 정보 조회 실패:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Naver API 호출 실패:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }

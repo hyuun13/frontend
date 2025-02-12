@@ -11,11 +11,13 @@ const Home: FC = () => {
   const [monthlyBooks, setMonthlyBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useToast(); // 전역 토스트 사용
-  const location = useLocation(); // React Router로 전달된 메시지 접근
+  const { showToast } = useToast();
+  const location = useLocation();
   const toastShownRef = useRef(false);
 
-  // 비밀번호 변경 메시지 표시
+  // ISBN 캐시를 활용해 중복 요청 방지
+  const isbnCache = useRef(new Map());
+
   useEffect(() => {
     if (location.state && !toastShownRef.current) {
       const { message, type } = location.state as {
@@ -23,6 +25,7 @@ const Home: FC = () => {
         type: "success" | "error";
       };
       showToast(message, type);
+      toastShownRef.current = true;
     }
   }, [location.state, showToast]);
 
@@ -30,32 +33,49 @@ const Home: FC = () => {
     const fetchBooks = async () => {
       setLoading(true);
       setError(null);
-      try {
-        // 주간 최다 대출 도서 가져오기
-        const weeklyResponse = await bookMostService(0); // action: 0은 주간
-        const monthlyResponse = await bookMostService(1); // action: 1은 월간
 
+      try {
+        // 📌 주간 & 월간 데이터 병렬로 가져오기
+        const [weeklyResponse, monthlyResponse] = await Promise.all([
+          bookMostService(0),
+          bookMostService(1),
+        ]);
+
+        // 📌 ISBN 캐시를 활용한 데이터 변환 함수
         const enrichBookData = async (book: any) => {
+          if (isbnCache.current.has(book.bookIsbn)) {
+            return {
+              ...isbnCache.current.get(book.bookIsbn),
+              id: book.bookId,
+              status: book.bookStatus,
+            };
+          }
+
           const kakaoBookDetails = await fillBookDetailsKakao({
             isbn: book.bookIsbn,
           });
 
-          return {
+          const bookData = {
             id: book.bookId,
             isbn: book.bookIsbn,
             status: book.bookStatus,
             title: kakaoBookDetails.title || "제목 없음",
             coverImageUrl: kakaoBookDetails.coverImageUrl || "/placeholder.svg",
           };
+
+          isbnCache.current.set(book.bookIsbn, bookData); // 캐시에 저장
+          return bookData;
         };
 
-        const filledWeeklyBooks = weeklyResponse?.bookRankList
-          ? await Promise.all(weeklyResponse.bookRankList.map(enrichBookData))
-          : [];
-
-        const filledMonthlyBooks = monthlyResponse?.bookRankList
-          ? await Promise.all(monthlyResponse.bookRankList.map(enrichBookData))
-          : [];
+        // 📌 Kakao API 병렬 실행
+        const [filledWeeklyBooks, filledMonthlyBooks] = await Promise.all([
+          weeklyResponse?.bookRankList
+            ? Promise.all(weeklyResponse.bookRankList.map(enrichBookData))
+            : [],
+          monthlyResponse?.bookRankList
+            ? Promise.all(monthlyResponse.bookRankList.map(enrichBookData))
+            : [],
+        ]);
 
         setWeeklyBooks(filledWeeklyBooks);
         setMonthlyBooks(filledMonthlyBooks);
@@ -76,54 +96,58 @@ const Home: FC = () => {
       <SearchBarv2 />
       <main className="container px-4 py-4 mx-auto bg-snow">
         {error && <p className="text-red-500">{error}</p>}
+
         {loading ? (
-          <p className="text-gray-600">로딩 중...</p>
+          <>
+            <SkeletonSection title="주간 최다 대출 도서" />
+            <SkeletonSection title="월간 최다 대출 도서" />
+          </>
         ) : (
           <>
             {/* 주간 최다 대출 도서 섹션 */}
-            <section className="mb-10">
-              <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
-                주간 최다 대출 도서
-              </h2>
-              <div className="flex pb-4 space-x-4 overflow-x-auto">
-                {weeklyBooks.map((book) => (
-                  <div key={book.id} className="flex-shrink-0">
-                    <BookCardVertical
-                      id={book.id}
-                      isbn={book.isbn}
-                      title={book.title}
-                      coverImageUrl={book.coverImageUrl}
-                      status={book.status}
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
-
+            <BookSection title="주간 최다 대출 도서" books={weeklyBooks} />
             {/* 월간 최다 대출 도서 섹션 */}
-            <section>
-              <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">
-                월간 최다 대출 도서
-              </h2>
-              <div className="flex pb-4 space-x-4 overflow-x-auto">
-                {monthlyBooks.map((book) => (
-                  <div key={book.id} className="flex-shrink-0">
-                    <BookCardVertical
-                      id={book.id}
-                      isbn={book.isbn}
-                      title={book.title}
-                      coverImageUrl={book.coverImageUrl}
-                      status={book.status}
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
+            <BookSection title="월간 최다 대출 도서" books={monthlyBooks} />
           </>
         )}
       </main>
     </div>
   );
 };
+
+// 📌 스켈레톤 UI 컴포넌트
+const SkeletonSection: FC<{ title: string }> = ({ title }) => (
+  <section className="mb-10">
+    <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">{title}</h2>
+    <div className="flex pb-4 space-x-4 overflow-x-auto">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="w-40 h-56 bg-gray-200 animate-pulse rounded-lg"
+        />
+      ))}
+    </div>
+  </section>
+);
+
+// 📌 도서 섹션 컴포넌트
+const BookSection: FC<{ title: string; books: any[] }> = ({ title, books }) => (
+  <section className="mb-10">
+    <h2 className="pb-1 mb-4 text-2xl font-semibold text-primary">{title}</h2>
+    <div className="flex pb-4 space-x-4 overflow-x-auto">
+      {books.map((book) => (
+        <div key={book.id} className="flex-shrink-0">
+          <BookCardVertical
+            id={book.id}
+            isbn={book.isbn}
+            title={book.title}
+            coverImageUrl={book.coverImageUrl}
+            status={book.status}
+          />
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
 export default Home;
