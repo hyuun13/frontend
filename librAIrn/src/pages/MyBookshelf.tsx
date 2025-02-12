@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { fetchUserRecords } from "../services/userService";
-import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
+import { fillBookDetailsKakao } from "../utils/fillBookDetailsKakao";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";
 import BookCardHorizontalComponent from "../components/common/BookCardHorizontal";
 import { useAuth } from "../hooks/useAuth";

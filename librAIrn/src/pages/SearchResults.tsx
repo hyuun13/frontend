@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { searchBookService } from "../services/bookService";
 import type { BookCardHorizontal } from "../types/book";
-import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
+import { fillBookDetailsKakao } from "../utils/fillBookDetailsKakao";
 import BookCardHorizontalComponent from "../components/common/BookCardHorizontal";
 import SearchBarv2 from "../components/common/SearchBarv2";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";

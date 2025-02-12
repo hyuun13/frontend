@@ -2,7 +2,7 @@ import { FC, useEffect, useState, useRef } from "react";
 import BookCardVertical from "../components/common/BookCardVertical";
 import SearchBarv2 from "../components/common/SearchBarv2";
 import { bookMostService } from "../services/bookService";
-import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
+import { fillBookDetailsKakao } from "../utils/fillBookDetailsKakao";
 import { useToast } from "../hooks/useToast";
 import { useLocation } from "react-router-dom";
 

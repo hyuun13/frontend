@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { searchBookService } from "../services/bookService";
 import type { BookCardHorizontal } from "../types/book";
-import { fillBookDetailsKakao } from "../utils/fillBookResultsKakao";
+import { fillBookDetailsKakao } from "../utils/fillBookDetailsKakao";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";
 
 /*
