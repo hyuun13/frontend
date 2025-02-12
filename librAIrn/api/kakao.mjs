@@ -1,7 +1,6 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -17,9 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: { Authorization: `KakaoAK ${process.env.KAKAO_API_KEY}` },
     });
 
-    res.status(200).json(response.data.documents[0] || null);
+    return res.status(200).json(response.data.documents[0] || null);
   } catch (error) {
     console.error("Kakao API 호출 실패:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
