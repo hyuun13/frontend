@@ -88,7 +88,7 @@ const BookRegistration: FC = () => {
     <div className="min-h-screen py-8 bg-snow">
       <div className="container max-w-lg px-4 mx-auto">
         {error && <p className="mb-4 text-red-500">{error}</p>}
-        <form onSubmit={handleSubmit} className="p-6 rounded shadow bg-snow">
+        <form onSubmit={handleSubmit} className="p-6 rounded bg-snow">
           {/* 책 바코드 입력 필드 */}
           <div className="mb-4">
             <label className="block mb-1 text-lg font-bold" htmlFor="bookId">
