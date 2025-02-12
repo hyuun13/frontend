@@ -1,13 +1,13 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/backend/:path*",
       "destination": "http://43.200.7.229/api/:path*"
     }
   ],
   "headers": [
     {
-      "source": "/api/:path*",
+      "source": "/backend/:path*",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         {
