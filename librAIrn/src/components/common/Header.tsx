@@ -88,7 +88,6 @@ const Header: FC = () => {
         </motion.li>
       ))}
 
-      {/* 로그아웃 버튼 - 동일한 스타일로 맞춤 */}
       <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <button
           onClick={() => {
@@ -119,7 +118,16 @@ const Header: FC = () => {
                 <ChevronLeft size={24} />
               </motion.button>
             )}
-            <h1 className="text-xl font-bold text-orange">{currentTitle}</h1>
+            <h1
+              className={`text-xl font-bold text-orange ${
+                currentTitle === "LibrAIry" ? "cursor-pointer" : ""
+              }`}
+              onClick={() => {
+                if (currentTitle === "LibrAIry") navigate("/");
+              }}
+            >
+              {currentTitle}
+            </h1>
           </div>
 
           <div className="flex items-center space-x-4">
