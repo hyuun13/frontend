@@ -57,9 +57,9 @@ export const transformBookDtoToBookCardVertical = (dto: {
 export const mapToBookCardVertical = (
   book: BookFrontResponseDto
 ): Partial<BookCardVertical> => ({
-  id: "",
+  id: book.bookId || "",
   isbn: book.bookIsbn || "",
   title: "정보 없음", // 없으면 나중에 네이버로 채움
-  coverImageUrl: "/placeholder.svg",
+  coverImageUrl: "",
   status: book.bookStatus || "정보 없음",
 });

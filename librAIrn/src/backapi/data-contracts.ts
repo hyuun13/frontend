@@ -233,6 +233,7 @@ export interface BookFrontRequestDto {
 }
 
 export interface BookFrontResponseDto {
+  bookId?: string;
   bookIsbn?: string;
   bookStatus?: string;
 }

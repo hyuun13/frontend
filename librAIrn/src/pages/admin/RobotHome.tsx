@@ -12,6 +12,7 @@ import { fillBookDetailsNaver } from "../../utils/fillBookDetailsNaver";
 import { mapToBookCardVertical } from "../../utils/transformers";
 import { BookBorrowRequestDto } from "../../backapi/data-contracts";
 import { isBookCardVertical } from "../../utils/validators";
+
 // 폴링 함수 개선: 타임아웃, 오류 처리, 로직 간소화
 async function pollData<T>(
   fetchFunction: () => Promise<T | null>,
@@ -109,6 +110,7 @@ export default function RobotHome() {
       () => fetchBookInfoFront({ robotId }),
       async (book) => {
         let enrichedBook = mapToBookCardVertical(book);
+        console.log("enrichedBook", enrichedBook);
         enrichedBook = await fillBookDetailsNaver(enrichedBook);
 
         // 모든 필수 속성 검사 및 안전한 타입 할당

@@ -23,50 +23,54 @@ import { NotificationProvider } from "./context/NotificationContext";
 import Header from "./components/common/Header";
 import { ToastProvider } from "./context/ToastContext";
 import ToastList from "./components/common/ToastList";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ToastProvider>
-          <div className="flex flex-col min-h-screen bg-snow">
-            <Header />
-            <main className="flex-grow p-4 bg-snow -mt-10">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search" element={<SearchResults />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/find-id" element={<FindId />} />
-                <Route path="/find-password" element={<FindPassword />} />
-                <Route path="/my-info" element={<ChangeMyInfo />} />
-                <Route path="/admin/robot" element={<RobotManagement />} />
-                <Route path="/admin/robot/:id" element={<RobotDetails />} />
-                <Route
-                  path="/admin/robot/add"
-                  element={<RobotRegistration />}
-                />
-                <Route
-                  path="/admin/collection"
-                  element={<CollectionStatus />}
-                />
-                <Route
-                  path="/admin/notification"
-                  element={<NotificationPage />}
-                />
-                <Route path="/admin/add" element={<BookRegistration />} />
-                <Route path="/book/:id" element={<BookDetails />} />
-                <Route path="/bookshelf" element={<MyBookShelf />} />
-                <Route path="/qrcode" element={<QrcodePage />} />
-                <Route path="/my" element={<MyPage />} />
-                <Route path="/admin/robot/screen" element={<RobotHome />} />
-              </Routes>
-            </main>
-            <ToastList />
-          </div>
-        </ToastProvider>
-      </NotificationProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NotificationProvider>
+          <ToastProvider>
+            <div className="flex flex-col min-h-screen bg-snow">
+              <Header />
+              <main className="flex-grow p-4 bg-snow -mt-10">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/find-id" element={<FindId />} />
+                  <Route path="/find-password" element={<FindPassword />} />
+                  <Route path="/my-info" element={<ChangeMyInfo />} />
+                  <Route path="/admin/robot" element={<RobotManagement />} />
+                  <Route path="/admin/robot/:id" element={<RobotDetails />} />
+                  <Route
+                    path="/admin/robot/add"
+                    element={<RobotRegistration />}
+                  />
+                  <Route
+                    path="/admin/collection"
+                    element={<CollectionStatus />}
+                  />
+                  <Route
+                    path="/admin/notification"
+                    element={<NotificationPage />}
+                  />
+                  <Route path="/admin/add" element={<BookRegistration />} />
+                  <Route path="/book/:id" element={<BookDetails />} />
+                  <Route path="/bookshelf" element={<MyBookShelf />} />
+                  <Route path="/qrcode" element={<QrcodePage />} />
+                  <Route path="/my" element={<MyPage />} />
+                  <Route path="/admin/robot/screen" element={<RobotHome />} />
+                </Routes>
+              </main>
+              <ToastList />
+            </div>
+          </ToastProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
