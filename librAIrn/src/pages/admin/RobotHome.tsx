@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchRobotStatus } from "../../services/robotService";
 import StepIndicator from "../../components/ui/step-indicator";
 import {
   fetchBookInfoFront,
@@ -13,7 +12,13 @@ import { mapToBookCardVertical } from "../../utils/transformers";
 import { BookBorrowRequestDto } from "../../backapi/data-contracts";
 import { isBookCardVertical } from "../../utils/validators";
 
-// 폴링 함수 개선: 타임아웃, 오류 처리, 로직 간소화
+const calculateReturnDate = () => {
+  const returnDate = new Date();
+  returnDate.setDate(returnDate.getDate() + 14);
+  return returnDate.toISOString().split("T")[0];
+};
+
+// 🔹 Polling function for book & user fetching
 async function pollData<T>(
   fetchFunction: () => Promise<T | null>,
   onSuccess: (data: T) => void,
@@ -46,38 +51,23 @@ async function pollData<T>(
 
 export default function RobotHome() {
   const [searchParams] = useSearchParams();
-  // 기존: const robotId = Number(searchParams.get("robotId"));
-  // 개선: 문자열 끝의 숫자를 추출하여 robotId로 사용
   const rawRobotId = searchParams.get("robotId");
   const robotIdMatch = rawRobotId?.match(/(\d+)$/);
   const robotId = robotIdMatch ? Number(robotIdMatch[1]) : NaN;
 
-  const [robotStatus, setRobotStatus] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [bookInfo, setBookInfo] = useState<BookCardVertical | null>(null);
+  const [bookLoaded, setBookLoaded] = useState(false);
+
   const [userInfo, setUserInfo] = useState<any>(null);
   const [borrowResult, setBorrowResult] = useState<{
     message: string;
     status: string;
+    returnDate?: string;
   } | null>(null);
-
-  useEffect(() => {
-    if (isNaN(robotId)) {
-      setErrorMessage("유효하지 않은 로봇 ID입니다.");
-      return;
-    }
-    const fetchRobotData = async () => {
-      try {
-        const response = await fetchRobotStatus(robotId);
-        setRobotStatus(response.status);
-      } catch {
-        setErrorMessage("로봇 상태를 불러오는 중 오류가 발생했습니다.");
-      }
-    };
-    fetchRobotData();
-  }, [robotId]);
 
   const steps = [
     {
@@ -102,6 +92,31 @@ export default function RobotHome() {
     },
   ];
 
+  useEffect(() => {
+    if (errorMessage) {
+      const timeout = setTimeout(() => {
+        setErrorMessage(null);
+        resetProcess();
+      }, 10000);
+      return () => clearTimeout(timeout);
+    }
+  }, [errorMessage]);
+
+  useEffect(() => {
+    if (userInfo) {
+      setCurrentStep(2);
+    }
+  }, [userInfo]);
+
+  const resetProcess = () => {
+    setCurrentStep(0);
+    setBookInfo(null);
+    setUserInfo(null);
+    setBorrowResult(null);
+    setErrorMessage(null);
+  };
+
+  // 🔹 Fetch Book Info with Polling
   const handleBookRecognition = async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -110,24 +125,29 @@ export default function RobotHome() {
       () => fetchBookInfoFront({ robotId }),
       async (book) => {
         let enrichedBook = mapToBookCardVertical(book);
-        console.log("enrichedBook", enrichedBook);
         enrichedBook = await fillBookDetailsNaver(enrichedBook);
 
-        // 모든 필수 속성 검사 및 안전한 타입 할당
         if (isBookCardVertical(enrichedBook)) {
+          // Update both bookInfo and currentStep together
           setBookInfo(enrichedBook);
+          setBookLoaded(true);
+          setCurrentStep(1);
         } else {
           setErrorMessage("도서 정보가 올바르지 않습니다.");
         }
-        setCurrentStep(1);
       },
-      () => setErrorMessage("도서 정보를 가져오는 데 실패했습니다.")
+      () =>
+        setErrorMessage(
+          "도서 정보를 가져오는 데 실패했습니다. 다시 시도해주세요."
+        )
     ).finally(() => setIsLoading(false));
   };
 
+  // 🔹 Fetch User Info with Polling
   const handleMemberRecognition = async () => {
     setIsLoading(true);
     setErrorMessage(null);
+
     await pollData(
       () => fetchUserInfoService({ robotId }),
       (user) => {
@@ -138,6 +158,7 @@ export default function RobotHome() {
     ).finally(() => setIsLoading(false));
   };
 
+  // 🔹 Borrow Book
   const handleBorrow = async () => {
     if (!bookInfo || !userInfo) {
       setErrorMessage("대출에 필요한 정보가 부족합니다.");
@@ -154,12 +175,20 @@ export default function RobotHome() {
         userId: userInfo.userId,
       };
       const result = await borrowBookService(borrowRequest);
-      setBorrowResult({
-        message: result?.isDone
-          ? "대출 성공!"
-          : "대출 실패. 다시 시도해주세요.",
-        status: result?.isDone ? "success" : "error",
-      });
+
+      if (result?.isDone) {
+        setBorrowResult({
+          message: "대출이 완료되었습니다.",
+          status: "success",
+          returnDate: calculateReturnDate(),
+        });
+      } else {
+        setBorrowResult({
+          message: result?.message || "대출이 불가합니다.",
+          status: "error",
+        });
+      }
+
       setCurrentStep(3);
     } catch {
       setErrorMessage("대출 요청 중 오류가 발생했습니다.");
@@ -168,95 +197,136 @@ export default function RobotHome() {
     }
   };
 
-  const resetProcess = () => {
-    setCurrentStep(0);
-    setBookInfo(null);
-    setUserInfo(null);
-    setBorrowResult(null);
-    setErrorMessage(null);
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-snow">
-      <div className="w-full max-w-4xl">
+    <div className="flex items-center justify-center min-h-screen bg-snow">
+      <div className="relative w-full max-w-4xl aspect-[6/3.4] flex flex-col items-center justify-between p-6 bg-white rounded-lg shadow-lg">
         <StepIndicator steps={steps} currentStep={currentStep} />
-
-        <div className="p-6 rounded-lg bg-snow">
-          {robotStatus && (
-            <p className="mb-4 text-xl font-bold">로봇 상태: {robotStatus}</p>
-          )}
-          {errorMessage && (
-            <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-lg">
-              {errorMessage}
-            </div>
-          )}
-
-          {currentStep === 0 && (
-            <div className="text-center">
-              <h1 className="mb-6 text-2xl font-bold">
-                대출하실 도서 한 권을 리더기에 올려 주세요.
-              </h1>
-              {isLoading && (
-                <div className="w-12 h-12 border-4 border-orange-400 rounded-full animate-spin"></div>
-              )}
-              <button
-                onClick={handleBookRecognition}
-                className="px-6 py-2 text-white bg-orange rounded-lg hover:bg-orange-hover"
-                disabled={isLoading}
-              >
-                도서 인식 시작
-              </button>
-            </div>
-          )}
-
-          {currentStep === 1 && bookInfo && (
-            <div className="flex">
-              <img
-                src={bookInfo.coverImageUrl || "/placeholder.svg"}
-                alt={bookInfo.title}
-                className="w-64 rounded"
-              />
-              <div className="ml-4">
-                <h2 className="text-xl font-bold">{bookInfo.title}</h2>
-                <p>
-                  {bookInfo.status === "대출 가능" ? "대출 가능" : "대출 불가"}
+        <div className="flex flex-col items-center justify-center flex-grow text-center">
+          {isLoading ? (
+            <div className="w-16 h-16 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+          ) : errorMessage ? (
+            <h1 className="mb-6 text-3xl font-bold">{errorMessage}</h1>
+          ) : currentStep === 1 ? (
+            bookInfo ? (
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full max-w-lg">
+                {/* Book Cover */}
+                <div className="w-32 sm:w-48 md:w-56 lg:w-64 aspect-[3/4] overflow-hidden rounded-lg shadow-lg">
+                  <img
+                    src={bookInfo.coverImageUrl || "/placeholder.svg"}
+                    alt={bookInfo.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Book Info */}
+                <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                  {bookInfo.status === "대출 가능" ? (
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                      『{bookInfo.title}』을 대출하시겠습니까?
+                    </h2>
+                  ) : (
+                    <div className="flex items-center gap-2 text-red-600">
+                      <svg
+                        className="w-6 h-6"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        fill="none"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01M12 4a8 8 0 110 16 8 8 0 010-16z"
+                        />
+                      </svg>
+                      <p className="text-xl font-semibold">
+                        이 도서는 {bookInfo.status}입니다.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="w-16 h-16 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+            )
+          ) : currentStep === 2 && userInfo ? (
+            <>
+              {userInfo.userStatus === "대출 가능" ? (
+                <p className="mb-6 text-3xl">
+                  {userInfo.userName}님, 대출하시겠습니까?
                 </p>
+              ) : (
+                <p className="mb-6 text-3xl">
+                  {userInfo.userName}님, {userInfo.userStatus}
+                </p>
+              )}
+            </>
+          ) : currentStep === 3 && borrowResult ? (
+            <>
+              <p
+                className={`mb-6 text-3xl font-bold ${
+                  borrowResult.status === "success"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {borrowResult.message}
+              </p>
+              {borrowResult.status === "success" && (
+                <p className="text-xl">
+                  반납 예정일: {borrowResult.returnDate}
+                </p>
+              )}
+            </>
+          ) : currentStep === 0 && !bookLoaded ? (
+            <h1 className="mb-6 text-3xl font-bold">
+              대출하실 도서를 한 권씩 올려 주세요.
+            </h1>
+          ) : null}
+        </div>
+
+        <div
+          className={`w-full flex ${
+            currentStep === 0 ? "justify-center" : "justify-between"
+          }`}
+        >
+          {currentStep > 0 && (
+            <button
+              onClick={resetProcess}
+              className="w-1/2 px-6 py-3 text-xl text-white bg-gray-500 rounded-lg hover:bg-gray-600"
+            >
+              처음으로
+            </button>
+          )}
+
+          {!isLoading && currentStep < 3 && (
+            <>
+              {currentStep === 0 && (
+                <button
+                  onClick={handleBookRecognition}
+                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
+                >
+                  대출하기
+                </button>
+              )}
+
+              {currentStep === 1 && bookInfo?.status === "대출 가능" && (
                 <button
                   onClick={handleMemberRecognition}
-                  className="mt-4 px-4 py-2 text-white bg-orange rounded-lg"
+                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
                 >
-                  회원 확인
+                  대출하기
                 </button>
-              </div>
-            </div>
-          )}
+              )}
 
-          {currentStep === 2 && userInfo && (
-            <div className="text-center">
-              <p className="mb-4 text-xl">
-                {userInfo.name}님, 대출을 진행하시겠습니까?
-              </p>
-              <button
-                onClick={handleBorrow}
-                className="px-6 py-2 text-white bg-orange rounded-lg"
-              >
-                대출하기
-              </button>
-            </div>
-          )}
-
-          {currentStep === 3 && borrowResult && (
-            <div
-              className={`text-center ${borrowResult.status === "success" ? "text-green-600" : "text-red-600"}`}
-            >
-              <p className="mb-6 text-xl">{borrowResult.message}</p>
-              <button
-                onClick={resetProcess}
-                className="px-6 py-2 text-white bg-orange rounded-lg"
-              >
-                처음으로
-              </button>
-            </div>
+              {currentStep === 2 && userInfo?.userStatus === "대출 가능" && (
+                <button
+                  onClick={handleBorrow}
+                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
+                >
+                  대출하기
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

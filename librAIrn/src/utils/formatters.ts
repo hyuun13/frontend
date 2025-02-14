@@ -24,6 +24,7 @@ export const formatDate = (dateString: string): string => {
     return dateString;
   }
 };
+
 export const formatTitle = (title: string): string => {
   // 첫 번째 괄호가 나오는 위치를 찾음
   const bracketIndex = title.indexOf("(");

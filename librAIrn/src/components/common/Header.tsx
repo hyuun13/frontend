@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useMediaQuery } from "react-responsive";
+import { checkUnreadNoticeService } from "../../services/noticeService";
 
 const Header: FC = () => {
   const location = useLocation();
@@ -24,10 +25,28 @@ const Header: FC = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isWideScreen = useMediaQuery({ query: "(min-width: 768px)" });
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isHidden, setIsHidden] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const isAdmin = user && user.id >= 1 && user.id <= 5;
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchUnreadCount = async () => {
+      const response = await checkUnreadNoticeService();
+      if (response && response.newNoticeNumber !== undefined) {
+        setUnreadCount(response.newNoticeNumber);
+        setIsHidden(false);
+      }
+    };
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 10000);
+
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
   const pageTitles: { [key: string]: string } = {
     "/bookshelf": "내 책장",
@@ -147,12 +166,23 @@ const Header: FC = () => {
                 )}
                 {isAdmin && (
                   <motion.button
-                    onClick={() => navigate("/admin/notification")}
+                    onClick={() => {
+                      navigate("/admin/notification");
+                      setIsHidden(true);
+                    }}
                     className="p-2 text-gray-600 hover:text-orange"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Bell size={24} />
+                    {" "}
+                    <div className="relative">
+                      <Bell size={24} />
+                      {unreadCount > 0 && !isHidden && (
+                        <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </motion.button>
                 )}
               </>

@@ -1,6 +1,6 @@
 import { AuthProvider } from "./context/AuthContext";
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import FindId from "./pages/auth/FindId";
@@ -24,16 +24,19 @@ import Header from "./components/common/Header";
 import { ToastProvider } from "./context/ToastContext";
 import ToastList from "./components/common/ToastList";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
+  const location = useLocation();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <NotificationProvider>
           <ToastProvider>
             <div className="flex flex-col min-h-screen bg-snow">
-              <Header />
+              {location.pathname !== "/admin/robot/screen" && <Header />}
               <main className="flex-grow p-4 bg-snow -mt-10">
                 <Routes>
                   <Route path="/" element={<Home />} />

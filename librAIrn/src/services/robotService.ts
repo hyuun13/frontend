@@ -10,7 +10,6 @@ import type {
   DeleteRobotData,
   ShowRobotLogData,
 } from "../backapi/data-contracts";
-import axios from "axios";
 
 const api = new Api();
 
@@ -78,8 +77,4 @@ export const fetchRobotLog = async (
     console.error("로봇 활동 로그 조회 실패:", error);
     return null;
   }
-};
-export const fetchRobotStatus = async (robotId: number) => {
-  const response = await axios.get(`/api/robot/status?robotId=${robotId}`);
-  return response.data;
 };
