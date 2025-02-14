@@ -11,6 +11,8 @@ import { fillBookDetailsNaver } from "../../utils/fillBookDetailsNaver";
 import { mapToBookCardVertical } from "../../utils/transformers";
 import { BookBorrowRequestDto } from "../../backapi/data-contracts";
 import { isBookCardVertical } from "../../utils/validators";
+import { motion, AnimatePresence } from "framer-motion";
+import { Book, User, CheckCircle, AlertCircle } from "lucide-react";
 
 const calculateReturnDate = () => {
   const returnDate = new Date();
@@ -23,7 +25,7 @@ async function pollData<T>(
   fetchFunction: () => Promise<T | null>,
   onSuccess: (data: T) => void,
   onTimeout: () => void,
-  timeout: number = 5000,
+  timeout: number = 10000,
   interval: number = 500
 ): Promise<void> {
   let elapsedTime = 0;
@@ -58,6 +60,7 @@ export default function RobotHome() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   const [bookInfo, setBookInfo] = useState<BookCardVertical | null>(null);
   const [bookLoaded, setBookLoaded] = useState(false);
@@ -97,7 +100,7 @@ export default function RobotHome() {
       const timeout = setTimeout(() => {
         setErrorMessage(null);
         resetProcess();
-      }, 10000);
+      }, 30000);
       return () => clearTimeout(timeout);
     }
   }, [errorMessage]);
@@ -111,6 +114,7 @@ export default function RobotHome() {
   const resetProcess = () => {
     setCurrentStep(0);
     setBookInfo(null);
+    setBookLoaded(false); // Reset bookLoaded to false
     setUserInfo(null);
     setBorrowResult(null);
     setErrorMessage(null);
@@ -146,6 +150,7 @@ export default function RobotHome() {
   // 🔹 Fetch User Info with Polling
   const handleMemberRecognition = async () => {
     setIsLoading(true);
+    setLoadingMessage("회원 QR코드를 카메라에 인식해주십시오.");
     setErrorMessage(null);
 
     await pollData(
@@ -155,7 +160,10 @@ export default function RobotHome() {
         setCurrentStep(2);
       },
       () => setErrorMessage("회원 정보를 가져오는 데 실패했습니다.")
-    ).finally(() => setIsLoading(false));
+    ).finally(() => {
+      setIsLoading(false);
+      setLoadingMessage(null);
+    });
   };
 
   // 🔹 Borrow Book
@@ -198,18 +206,41 @@ export default function RobotHome() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-snow">
-      <div className="relative w-full max-w-4xl aspect-[6/3.4] flex flex-col items-center justify-between p-6 bg-white rounded-lg shadow-lg">
-        <StepIndicator steps={steps} currentStep={currentStep} />
-        <div className="flex flex-col items-center justify-center flex-grow text-center">
-          {isLoading ? (
-            <div className="w-16 h-16 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
-          ) : errorMessage ? (
-            <h1 className="mb-6 text-3xl font-bold">{errorMessage}</h1>
-          ) : currentStep === 1 ? (
-            bookInfo ? (
+    <div className="flex items-center justify-center min-h-screen">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative w-full max-w-4xl aspect-[6/3.4] flex flex-col items-center justify-between p-8 bg-snow rounded-2xl"
+      >
+        <div className="w-full">
+          <StepIndicator steps={steps} currentStep={currentStep} />
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center flex-grow text-center"
+          >
+            {isLoading ? (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-16 h-16 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+                {loadingMessage && (
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {loadingMessage}
+                  </h1>
+                )}
+              </div>
+            ) : errorMessage ? (
+              <div className="flex items-center space-x-2 text-orange">
+                <AlertCircle size={24} />
+                <h1 className="text-2xl font-bold">{errorMessage}</h1>
+              </div>
+            ) : currentStep === 1 && bookInfo ? (
               <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full max-w-lg">
-                {/* Book Cover */}
                 <div className="w-32 sm:w-48 md:w-56 lg:w-64 aspect-[3/4] overflow-hidden rounded-lg shadow-lg">
                   <img
                     src={bookInfo.coverImageUrl || "/placeholder.svg"}
@@ -217,72 +248,69 @@ export default function RobotHome() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                {/* Book Info */}
                 <div className="flex flex-col items-center md:items-start text-center md:text-left">
                   {bookInfo.status === "대출 가능" ? (
-                    <h2 className="text-2xl md:text-3xl font-bold">
-                      『{bookInfo.title}』을 대출하시겠습니까?
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+                      『{bookInfo.title}』을 <br />
+                      대출하시겠습니까?
                     </h2>
                   ) : (
-                    <div className="flex items-center gap-2 text-red-600">
-                      <svg
-                        className="w-6 h-6"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        fill="none"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 9v2m0 4h.01M12 4a8 8 0 110 16 8 8 0 010-16z"
-                        />
-                      </svg>
+                    <div className="flex items-center gap-2 text-orange">
+                      <AlertCircle size={24} />
                       <p className="text-xl font-semibold">
-                        이 도서는 {bookInfo.status}입니다.
+                        {bookInfo.status}인 도서입니다.
                       </p>
                     </div>
                   )}
                 </div>
               </div>
-            ) : (
-              <div className="w-16 h-16 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
-            )
-          ) : currentStep === 2 && userInfo ? (
-            <>
-              {userInfo.userStatus === "대출 가능" ? (
-                <p className="mb-6 text-3xl">
-                  {userInfo.userName}님, 대출하시겠습니까?
+            ) : currentStep === 2 && userInfo ? (
+              <div className="flex flex-col items-center space-y-4">
+                <User size={48} className="text-orange" />
+                {userInfo.userStatus === "대출 가능" ? (
+                  <p className="text-3xl font-bold text-gray-800">
+                    {userInfo.userName}님, <br />
+                    대출하시겠습니까?
+                  </p>
+                ) : (
+                  <p className="text-3xl font-bold text-gray-800">
+                    {userInfo.userName}님, <br />
+                    {userInfo.userStatus}
+                  </p>
+                )}
+              </div>
+            ) : currentStep === 3 && borrowResult ? (
+              <div className="flex flex-col items-center space-y-4">
+                {borrowResult.status === "success" ? (
+                  <CheckCircle size={48} className="text-blue" />
+                ) : (
+                  <AlertCircle size={48} className="text-orange" />
+                )}
+                <p
+                  className={`text-3xl font-bold ${
+                    borrowResult.status === "success"
+                      ? "text-blue"
+                      : "text-orange"
+                  }`}
+                >
+                  {borrowResult.message}
                 </p>
-              ) : (
-                <p className="mb-6 text-3xl">
-                  {userInfo.userName}님, {userInfo.userStatus}
-                </p>
-              )}
-            </>
-          ) : currentStep === 3 && borrowResult ? (
-            <>
-              <p
-                className={`mb-6 text-3xl font-bold ${
-                  borrowResult.status === "success"
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {borrowResult.message}
-              </p>
-              {borrowResult.status === "success" && (
-                <p className="text-xl">
-                  반납 예정일: {borrowResult.returnDate}
-                </p>
-              )}
-            </>
-          ) : currentStep === 0 && !bookLoaded ? (
-            <h1 className="mb-6 text-3xl font-bold">
-              대출하실 도서를 한 권씩 올려 주세요.
-            </h1>
-          ) : null}
-        </div>
+                {borrowResult.status === "success" && (
+                  <p className="text-xl text-gray-600">
+                    반납 예정일 {borrowResult.returnDate}
+                  </p>
+                )}
+              </div>
+            ) : currentStep === 0 && !bookLoaded ? (
+              <div className="flex flex-col items-center space-y-4">
+                <Book size={48} className="text-orange" />
+                <h1 className="text-3xl font-bold text-gray-800">
+                  대출하실 도서를 <br />한 권씩 올려 주세요.
+                </h1>
+              </div>
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
 
         <div
           className={`w-full flex ${
@@ -290,46 +318,54 @@ export default function RobotHome() {
           }`}
         >
           {currentStep > 0 && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={resetProcess}
-              className="w-1/2 px-6 py-3 text-xl text-white bg-gray-500 rounded-lg hover:bg-gray-600"
+              className="px-6 py-3 text-lg font-semibold text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors"
             >
               처음으로
-            </button>
+            </motion.button>
           )}
 
           {!isLoading && currentStep < 3 && (
             <>
               {currentStep === 0 && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleBookRecognition}
-                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
+                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
                 >
                   대출하기
-                </button>
+                </motion.button>
               )}
 
               {currentStep === 1 && bookInfo?.status === "대출 가능" && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleMemberRecognition}
-                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
+                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
                 >
                   대출하기
-                </button>
+                </motion.button>
               )}
 
               {currentStep === 2 && userInfo?.userStatus === "대출 가능" && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleBorrow}
-                  className="w-1/2 px-6 py-3 text-xl text-white bg-orange rounded-lg hover:bg-orange-hover"
+                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
                 >
                   대출하기
-                </button>
+                </motion.button>
               )}
             </>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
