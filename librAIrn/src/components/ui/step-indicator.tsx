@@ -52,7 +52,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
               )}
             </div>
             <span
-              className={`text-sm md:text-base lg:text-lg font-medium ${index <= currentStep ? "text-gray-800" : "text-gray-400"}`}
+              className={`text-sm md:text-base lg:text-lg ${index <= currentStep ? "text-orange font-extrabold" : "text-gray-400 font-medium"}`}
             >
               {step.label}
             </span>

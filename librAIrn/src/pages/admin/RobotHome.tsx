@@ -20,7 +20,24 @@ const calculateReturnDate = () => {
   return returnDate.toISOString().split("T")[0];
 };
 
-// 🔹 Polling function for book & user fetching
+interface ProcessState {
+  currentStep: number;
+  bookInfo: BookCardVertical | null;
+  userInfo: any;
+  borrowResult: {
+    message: string;
+    status: string;
+    returnDate?: string;
+  } | null;
+}
+
+const initialProcessState: ProcessState = {
+  currentStep: 0,
+  bookInfo: null,
+  userInfo: null,
+  borrowResult: null,
+};
+
 async function pollData<T>(
   fetchFunction: () => Promise<T | null>,
   onSuccess: (data: T) => void,
@@ -57,41 +74,32 @@ export default function RobotHome() {
   const robotIdMatch = rawRobotId?.match(/(\d+)$/);
   const robotId = robotIdMatch ? Number(robotIdMatch[1]) : NaN;
 
-  const [currentStep, setCurrentStep] = useState(0);
+  // 책 관련 상태와 현재 단계를 하나의 객체로 관리
+  const [process, setProcess] = useState<ProcessState>(initialProcessState);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
-  const [bookInfo, setBookInfo] = useState<BookCardVertical | null>(null);
-  const [bookLoaded, setBookLoaded] = useState(false);
-
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [borrowResult, setBorrowResult] = useState<{
-    message: string;
-    status: string;
-    returnDate?: string;
-  } | null>(null);
-
   const steps = [
     {
       label: "대기",
-      isCompleted: currentStep > 0,
-      isActive: currentStep === 0,
+      isCompleted: process.currentStep > 0,
+      isActive: process.currentStep === 0,
     },
     {
       label: "도서 인식",
-      isCompleted: currentStep > 1,
-      isActive: currentStep === 1,
+      isCompleted: process.currentStep > 1,
+      isActive: process.currentStep === 1,
     },
     {
       label: "회원 확인",
-      isCompleted: currentStep > 2,
-      isActive: currentStep === 2,
+      isCompleted: process.currentStep > 2,
+      isActive: process.currentStep === 2,
     },
     {
       label: "대출 결과",
-      isCompleted: currentStep === 3,
-      isActive: currentStep === 3,
+      isCompleted: process.currentStep === 3,
+      isActive: process.currentStep === 3,
     },
   ];
 
@@ -106,21 +114,27 @@ export default function RobotHome() {
   }, [errorMessage]);
 
   useEffect(() => {
-    if (userInfo) {
-      setCurrentStep(2);
+    if (process.userInfo) {
+      // 회원 정보가 설정되면 currentStep을 2로 업데이트
+      setProcess((prev) => ({ ...prev, currentStep: 2 }));
     }
-  }, [userInfo]);
+  }, [process.userInfo]);
+
+  useEffect(() => {
+    if (process.currentStep === 3) {
+      const timeout = setTimeout(() => {
+        resetProcess();
+      }, 20000);
+      return () => clearTimeout(timeout);
+    }
+  }, [process.currentStep]);
 
   const resetProcess = () => {
-    setCurrentStep(0);
-    setBookInfo(null);
-    setBookLoaded(false); // Reset bookLoaded to false
-    setUserInfo(null);
-    setBorrowResult(null);
+    setProcess(initialProcessState);
     setErrorMessage(null);
   };
 
-  // 🔹 Fetch Book Info with Polling
+  // 책 인식 (book) 관련 상태를 원자적으로 업데이트
   const handleBookRecognition = async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -132,10 +146,12 @@ export default function RobotHome() {
         enrichedBook = await fillBookDetailsNaver(enrichedBook);
 
         if (isBookCardVertical(enrichedBook)) {
-          // Update both bookInfo and currentStep together
-          setBookInfo(enrichedBook);
-          setBookLoaded(true);
-          setCurrentStep(1);
+          // bookInfo와 currentStep을 한 번에 업데이트
+          setProcess((prev) => ({
+            ...prev,
+            bookInfo: enrichedBook,
+            currentStep: 1,
+          }));
         } else {
           setErrorMessage("도서 정보가 올바르지 않습니다.");
         }
@@ -147,7 +163,6 @@ export default function RobotHome() {
     ).finally(() => setIsLoading(false));
   };
 
-  // 🔹 Fetch User Info with Polling
   const handleMemberRecognition = async () => {
     setIsLoading(true);
     setLoadingMessage("회원 QR코드를 카메라에 인식해주십시오.");
@@ -156,8 +171,11 @@ export default function RobotHome() {
     await pollData(
       () => fetchUserInfoService({ robotId }),
       (user) => {
-        setUserInfo(user);
-        setCurrentStep(2);
+        setProcess((prev) => ({
+          ...prev,
+          userInfo: user,
+          currentStep: 2,
+        }));
       },
       () => setErrorMessage("회원 정보를 가져오는 데 실패했습니다.")
     ).finally(() => {
@@ -166,9 +184,8 @@ export default function RobotHome() {
     });
   };
 
-  // 🔹 Borrow Book
   const handleBorrow = async () => {
-    if (!bookInfo || !userInfo) {
+    if (!process.bookInfo || !process.userInfo) {
       setErrorMessage("대출에 필요한 정보가 부족합니다.");
       return;
     }
@@ -178,26 +195,32 @@ export default function RobotHome() {
 
     try {
       const borrowRequest: BookBorrowRequestDto = {
-        bookId: bookInfo.id,
+        bookId: process.bookInfo.id,
         robotId,
-        userId: userInfo.userId,
+        userId: process.userInfo.userId,
       };
       const result = await borrowBookService(borrowRequest);
 
       if (result?.isDone) {
-        setBorrowResult({
-          message: "대출이 완료되었습니다.",
-          status: "success",
-          returnDate: calculateReturnDate(),
-        });
+        setProcess((prev) => ({
+          ...prev,
+          borrowResult: {
+            message: "대출이 완료되었습니다.",
+            status: "success",
+            returnDate: calculateReturnDate(),
+          },
+          currentStep: 3,
+        }));
       } else {
-        setBorrowResult({
-          message: result?.message || "대출이 불가합니다.",
-          status: "error",
-        });
+        setProcess((prev) => ({
+          ...prev,
+          borrowResult: {
+            message: result?.message || "대출이 불가합니다.",
+            status: "error",
+          },
+          currentStep: 3,
+        }));
       }
-
-      setCurrentStep(3);
     } catch {
       setErrorMessage("대출 요청 중 오류가 발생했습니다.");
     } finally {
@@ -206,166 +229,140 @@ export default function RobotHome() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full max-w-4xl aspect-[6/3.4] flex flex-col items-center justify-between p-8 bg-snow rounded-2xl"
-      >
-        <div className="w-full">
-          <StepIndicator steps={steps} currentStep={currentStep} />
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="flex flex-col items-center justify-center flex-grow text-center"
-          >
-            {isLoading ? (
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
-                {loadingMessage && (
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    {loadingMessage}
-                  </h1>
-                )}
-              </div>
-            ) : errorMessage ? (
-              <div className="flex items-center space-x-2 text-orange">
-                <AlertCircle size={24} />
-                <h1 className="text-2xl font-bold">{errorMessage}</h1>
-              </div>
-            ) : currentStep === 1 && bookInfo ? (
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full max-w-lg">
-                <div className="w-32 sm:w-48 md:w-56 lg:w-64 aspect-[3/4] overflow-hidden rounded-lg shadow-lg">
-                  <img
-                    src={bookInfo.coverImageUrl || "/placeholder.svg"}
-                    alt={bookInfo.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                  {bookInfo.status === "대출 가능" ? (
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-                      『{bookInfo.title}』을 <br />
-                      대출하시겠습니까?
-                    </h2>
-                  ) : (
-                    <div className="flex items-center gap-2 text-orange">
-                      <AlertCircle size={24} />
-                      <p className="text-xl font-semibold">
-                        {bookInfo.status}인 도서입니다.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : currentStep === 2 && userInfo ? (
-              <div className="flex flex-col items-center space-y-4">
-                <User size={48} className="text-orange" />
-                {userInfo.userStatus === "대출 가능" ? (
-                  <p className="text-3xl font-bold text-gray-800">
-                    {userInfo.userName}님, <br />
-                    대출하시겠습니까?
-                  </p>
-                ) : (
-                  <p className="text-3xl font-bold text-gray-800">
-                    {userInfo.userName}님, <br />
-                    {userInfo.userStatus}
-                  </p>
-                )}
-              </div>
-            ) : currentStep === 3 && borrowResult ? (
-              <div className="flex flex-col items-center space-y-4">
-                {borrowResult.status === "success" ? (
-                  <CheckCircle size={48} className="text-blue" />
-                ) : (
-                  <AlertCircle size={48} className="text-orange" />
-                )}
-                <p
-                  className={`text-3xl font-bold ${
-                    borrowResult.status === "success"
-                      ? "text-blue"
-                      : "text-orange"
-                  }`}
-                >
-                  {borrowResult.message}
-                </p>
-                {borrowResult.status === "success" && (
-                  <p className="text-xl text-gray-600">
-                    반납 예정일 {borrowResult.returnDate}
-                  </p>
-                )}
-              </div>
-            ) : currentStep === 0 && !bookLoaded ? (
-              <div className="flex flex-col items-center space-y-4">
-                <Book size={48} className="text-orange" />
-                <h1 className="text-3xl font-bold text-gray-800">
-                  대출하실 도서를 <br />한 권씩 올려 주세요.
-                </h1>
-              </div>
-            ) : null}
-          </motion.div>
-        </AnimatePresence>
+    <div className="flex flex-col items-center justify-between h-[600px] w-[1024px] bg-snow text-gray-800 py-10 px-6">
+      <div className="w-full">
+        <StepIndicator steps={steps} currentStep={process.currentStep} />
+      </div>
 
-        <div
-          className={`w-full flex ${
-            currentStep === 0 ? "justify-center" : "justify-between"
-          }`}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={process.currentStep}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="flex items-center justify-center w-full h-[400px]"
         >
-          {currentStep > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={resetProcess}
-              className="px-6 py-3 text-lg font-semibold text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              처음으로
-            </motion.button>
-          )}
-
-          {!isLoading && currentStep < 3 && (
-            <>
-              {currentStep === 0 && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleBookRecognition}
-                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
-                >
-                  대출하기
-                </motion.button>
+          {isLoading ? (
+            <div className="flex flex-col items-center space-y-6">
+              <div className="w-20 h-20 border-8 border-orange border-t-transparent rounded-full animate-spin"></div>
+              {loadingMessage && (
+                <h1 className="text-3xl font-bold">{loadingMessage}</h1>
               )}
-
-              {currentStep === 1 && bookInfo?.status === "대출 가능" && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleMemberRecognition}
-                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
-                >
-                  대출하기
-                </motion.button>
+            </div>
+          ) : errorMessage ? (
+            <div className="flex items-center space-x-4 text-orange">
+              <AlertCircle size={40} />
+              <h1 className="text-3xl font-bold">{errorMessage}</h1>
+            </div>
+          ) : process.currentStep === 1 && process.bookInfo ? (
+            <div className="flex items-center justify-center gap-8 w-full">
+              <div className="w-48 aspect-[3/4] overflow-hidden rounded-lg shadow-lg">
+                <img
+                  src={process.bookInfo.coverImageUrl || "/placeholder.svg"}
+                  alt={process.bookInfo.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                {process.bookInfo.status === "대출 가능" ? (
+                  <h2 className="text-4xl font-bold">
+                    『{process.bookInfo.title}』을(를) <br />
+                    대출하시겠습니까?
+                  </h2>
+                ) : (
+                  <div className="flex items-center gap-4 text-orange">
+                    <AlertCircle size={40} />
+                    <p className="text-3xl font-semibold">
+                      {process.bookInfo.status}인 도서입니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : process.currentStep === 2 && process.userInfo ? (
+            <div className="flex flex-col items-center space-y-8">
+              <User size={64} className="text-orange" />
+              {process.userInfo.userStatus === "대출 가능" ? (
+                <p className="text-5xl font-bold text-center">
+                  {process.userInfo.userName}님, <br />
+                  대출하시겠습니까?
+                </p>
+              ) : (
+                <p className="text-5xl font-bold text-center">
+                  {process.userInfo.userName}님, <br />
+                  {process.userInfo.userStatus}
+                </p>
               )}
-
-              {currentStep === 2 && userInfo?.userStatus === "대출 가능" && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleBorrow}
-                  className="px-6 py-3 text-lg font-semibold text-white bg-orange rounded-lg hover:bg-orange-hover transition-colors"
-                >
-                  대출하기
-                </motion.button>
+            </div>
+          ) : process.currentStep === 3 && process.borrowResult ? (
+            <div className="flex flex-col items-center space-y-8">
+              {process.borrowResult.status === "success" ? (
+                <CheckCircle size={64} className="text-blue" />
+              ) : (
+                <AlertCircle size={64} className="text-orange" />
               )}
-            </>
-          )}
-        </div>
-      </motion.div>
+              <p
+                className={`text-5xl font-bold text-center ${
+                  process.borrowResult.status === "success"
+                    ? "text-blue"
+                    : "text-orange"
+                }`}
+              >
+                {process.borrowResult.message}
+              </p>
+              {process.borrowResult.status === "success" && (
+                <p className="text-3xl text-center">
+                  반납 예정일 {process.borrowResult.returnDate}
+                </p>
+              )}
+            </div>
+          ) : process.currentStep === 0 ? (
+            <div className="flex flex-col items-center space-y-8">
+              <Book size={64} className="text-orange" />
+              <h1 className="text-5xl font-bold text-center">
+                대출하실 도서를 <br />한 권씩 올려 주세요.
+              </h1>
+            </div>
+          ) : null}
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="w-full flex justify-center space-x-6">
+        {process.currentStep > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={resetProcess}
+            className="px-10 py-5 text-2xl font-semibold text-white bg-gray-500 rounded-2xl hover:bg-gray-600 transition-colors shadow-lg"
+          >
+            처음으로
+          </motion.button>
+        )}
+
+        {!isLoading && process.currentStep < 3 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={
+              process.currentStep === 0
+                ? handleBookRecognition
+                : process.currentStep === 1
+                  ? handleMemberRecognition
+                  : handleBorrow
+            }
+            disabled={
+              (process.currentStep === 1 &&
+                process.bookInfo?.status !== "대출 가능") ||
+              (process.currentStep === 2 &&
+                process.userInfo?.userStatus !== "대출 가능")
+            }
+            className="px-16 py-6 text-3xl font-bold text-white bg-orange rounded-2xl hover:bg-orange-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            대출하기
+          </motion.button>
+        )}
+      </div>
     </div>
   );
 }

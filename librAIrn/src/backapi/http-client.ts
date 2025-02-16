@@ -73,6 +73,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: "https://librairy.p-e.kr",
+      //withCredentials: true,
       // baseURL: "",
       // baseURL: import.meta.env.VITE_API_BASE_URL || "http://43.200.7.229:8080",
       // baseURL: axiosConfig.baseURL || "/v1",
