@@ -32,7 +32,28 @@ export const userLoginService = async (
 ): Promise<UserLoginData | null> => {
   try {
     const response = await api.userLogin(payload);
-    return response.data;
+
+    // JWT 토큰이 Header에 포함되어 있다고 가정
+    const token = response.headers["Authorization"]?.split("Bearer ")[1];
+
+    console.log("token", token);
+    if (response.data && token) {
+      const { userId, userName } = response.data;
+
+      // JWT 및 사용자 정보 저장
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId.toString());
+      localStorage.setItem("userName", userName);
+      localStorage.setItem(
+        "isAdmin",
+        userId >= 1 && userId <= 5 ? "true" : "false"
+      );
+
+      return response.data;
+    } else {
+      console.error("로그인 실패: 응답 데이터 없음");
+      return null;
+    }
   } catch (error) {
     console.error("로그인 실패:", error);
     return null;
