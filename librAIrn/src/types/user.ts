@@ -3,26 +3,9 @@
  * API의 User 관련 DTO를 기반으로 UI 및 인증, 사용자 관리에 활용할 타입입니다.
  */
 export interface User {
-  /**
-   * 사용자 고유 식별자 (API: userId)
-   */
-  id: number;
-  /**
-   * 사용자 이름
-   */
-  name: string;
-  /**
-   * 로그인 아이디 (필요 시 추가)
-   */
-  loginId?: string;
-  /**
-   * 이메일 주소 (옵션)
-   */
-  email?: string;
-  /**
-   * 사용자의 상태 (예: 활성, 비활성 등)
-   */
-  status?: string;
+  userId: number;
+  userName: string;
+  isAdmin: boolean;
 }
 
 /**

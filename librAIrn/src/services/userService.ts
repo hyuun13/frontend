@@ -1,3 +1,4 @@
+//services/userService.ts
 import { Api } from "../backapi/Api";
 import {
   UserLoginRequestDto,
@@ -33,20 +34,26 @@ export const userLoginService = async (
   try {
     const response = await api.userLogin(payload);
 
-    // JWT 토큰이 Header에 포함되어 있다고 가정
-    const token = response.headers["Authorization"]?.split("Bearer ")[1];
+    const authHeader =
+      response.headers["authorization"] || response.headers["Authorization"];
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.split("Bearer ")[1]
+      : null;
 
-    console.log("token", token);
+    console.log("JWT Token:", token);
+    console.log("Login Response Body:", response.data);
+
     if (response.data && token) {
       const { userId, userName } = response.data;
 
-      // JWT 및 사용자 정보 저장
+      // ✅ Check if user is admin
+      const isAdmin = userId >= 1 && userId <= 5;
+
+      // ✅ Store JWT & user info in localStorage
       localStorage.setItem("token", token);
-      localStorage.setItem("userId", userId.toString());
-      localStorage.setItem("userName", userName);
       localStorage.setItem(
-        "isAdmin",
-        userId >= 1 && userId <= 5 ? "true" : "false"
+        "user",
+        JSON.stringify({ userId, userName, isAdmin })
       );
 
       return response.data;
@@ -66,7 +73,15 @@ export const userLogoutService = async (
 ): Promise<UserLogoutData | null> => {
   try {
     const response = await api.userLogout(payload);
-    return response.data;
+
+    if (response.data) {
+      // localStorage 정리 (로그아웃 처리)
+      localStorage.clear();
+      return response.data;
+    } else {
+      console.error("로그아웃 실패: 응답 데이터 없음");
+      return null;
+    }
   } catch (error) {
     console.error("로그아웃 실패:", error);
     return null;

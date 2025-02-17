@@ -1,3 +1,4 @@
+//context/AuthContext.tsx
 import {
   createContext,
   useContext,
@@ -5,64 +6,67 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { userLoginService } from "../services/userService";
+import { userLoginService, userLogoutService } from "../services/userService";
 import { User } from "../types/user";
 import { useNavigate } from "react-router-dom";
+import { UserLogoutRequestDto } from "../backapi/data-contracts";
 
 interface AuthContextType {
+  token: string | null;
   user: User | null;
   login: (loginId: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token")
+  );
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser)); // 로그인 상태 유지
+
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
   const login = async (loginId: string, password: string): Promise<boolean> => {
-    try {
-      const result = await userLoginService({
-        userLoginId: loginId,
-        userPassword: password,
-      });
-      if (result) {
-        const loggedInUser: User = {
-          id: result.userId,
-          name: result.userName,
-          status: "",
-        };
-        setUser(loggedInUser);
-        localStorage.setItem("user", JSON.stringify(loggedInUser));
-        localStorage.setItem("isAuthenticated", "true");
-        navigate("/");
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.error("로그인 오류:", error);
-      return false;
+    const result = await userLoginService({
+      userLoginId: loginId,
+      userPassword: password,
+    });
+    if (result) {
+      setToken(localStorage.getItem("token"));
+      setUser(JSON.parse(localStorage.getItem("user") || ""));
+      navigate("/");
+      return true;
     }
+    return false;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await userLogoutService({} as UserLogoutRequestDto);
+    localStorage.clear();
+    setToken(null);
     setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("isAuthenticated");
     navigate("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider
+      value={{ token, user, login, logout, isAdmin: user?.isAdmin || false }}
+    >
       {children}
     </AuthContext.Provider>
   );

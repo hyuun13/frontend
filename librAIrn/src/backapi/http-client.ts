@@ -73,12 +73,21 @@ export class HttpClient<SecurityDataType = unknown> {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: "https://librairy.p-e.kr",
-      //withCredentials: true,
+      // withCredentials: true,
       // baseURL: "",
       // baseURL: import.meta.env.VITE_API_BASE_URL || "http://43.200.7.229:8080",
       // baseURL: axiosConfig.baseURL || "/v1",
       // baseURL: "/v1",
     });
+    //jwt 추가
+    this.instance.interceptors.request.use((config) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
