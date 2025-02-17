@@ -1,6 +1,11 @@
-import { AuthProvider } from "./context/AuthContext";
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { ToastProvider } from "./context/ToastContext";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import FindId from "./pages/auth/FindId";
@@ -19,11 +24,8 @@ import MyBookShelf from "./pages/MyBookshelf";
 import QrcodePage from "./pages/Barcode";
 import MyPage from "./pages/MyPage";
 import RobotHome from "./pages/admin/RobotHome";
-import { NotificationProvider } from "./context/NotificationContext";
 import Header from "./components/common/Header";
-import { ToastProvider } from "./context/ToastContext";
 import ToastList from "./components/common/ToastList";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
 
@@ -51,27 +53,32 @@ const App: React.FC = () => {
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/find-id" element={<FindId />} />
                   <Route path="/find-password" element={<FindPassword />} />
-                  <Route path="/my-info" element={<ChangeMyInfo />} />
-                  <Route path="/admin/robot" element={<RobotManagement />} />
-                  <Route path="/admin/robot/:id" element={<RobotDetails />} />
-                  <Route
-                    path="/admin/robot/add"
-                    element={<RobotRegistration />}
-                  />
-                  <Route
-                    path="/admin/collection"
-                    element={<CollectionStatus />}
-                  />
-                  <Route
-                    path="/admin/notification"
-                    element={<NotificationPage />}
-                  />
-                  <Route path="/admin/add" element={<BookRegistration />} />
                   <Route path="/book/:id" element={<BookDetails />} />
-                  <Route path="/bookshelf" element={<MyBookShelf />} />
-                  <Route path="/qrcode" element={<QrcodePage />} />
-                  <Route path="/my" element={<MyPage />} />
-                  <Route path="/admin/robot/screen" element={<RobotHome />} />
+
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/my-info" element={<ChangeMyInfo />} />
+                    <Route path="/bookshelf" element={<MyBookShelf />} />
+                    <Route path="/qrcode" element={<QrcodePage />} />
+                    <Route path="/my" element={<MyPage />} />
+                  </Route>
+                  <Route element={<ProtectedRoute requireAdmin={true} />}>
+                    <Route path="/admin/robot" element={<RobotManagement />} />
+                    <Route path="/admin/robot/:id" element={<RobotDetails />} />
+                    <Route
+                      path="/admin/robot/add"
+                      element={<RobotRegistration />}
+                    />
+                    <Route
+                      path="/admin/collection"
+                      element={<CollectionStatus />}
+                    />
+                    <Route
+                      path="/admin/notification"
+                      element={<NotificationPage />}
+                    />
+                    <Route path="/admin/add" element={<BookRegistration />} />
+                    <Route path="/admin/robot/screen" element={<RobotHome />} />
+                  </Route>
                 </Routes>
               </main>
               <ToastList />

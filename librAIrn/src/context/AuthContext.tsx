@@ -9,7 +9,6 @@ import {
 import { userLoginService, userLogoutService } from "../services/userService";
 import { User } from "../types/user";
 import { useNavigate } from "react-router-dom";
-import { UserLogoutRequestDto } from "../backapi/data-contracts";
 
 interface AuthContextType {
   token: string | null;
@@ -56,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await userLogoutService({} as UserLogoutRequestDto);
+    await userLogoutService({});
     localStorage.clear();
     setToken(null);
     setUser(null);
@@ -72,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuthContext = (): AuthContextType => {
+export const useAuthContext = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuthContext must be used within an AuthProvider");

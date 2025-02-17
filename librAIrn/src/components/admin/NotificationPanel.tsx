@@ -12,22 +12,34 @@ const NotificationPanel: FC<NotificationPanelProps> = ({
   onDelete,
 }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {notices.map((notice) => (
-        <div key={notice.id} className="relative p-4 bg-white rounded shadow">
-          <div>
-            <p className="text-sm">{notice.content}</p>
-            <p className="text-xs text-gray-500">
-              {new Date(notice.createdAt).toLocaleString()}
-            </p>
+        <div
+          key={notice.id}
+          className="p-4 rounded-lg bg-white shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md"
+        >
+          <div className="flex justify-between items-start mb-2">
+            <span
+              className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                notice.type === "대출"
+                  ? "bg-blue text-white"
+                  : "bg-primary/10 text-primary"
+              }`}
+            >
+              {notice.type}
+            </span>
+
+            <button
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors duration-200"
+              onClick={() => onDelete(notice.id)}
+            >
+              삭제
+            </button>
           </div>
-          <button
-            onClick={() => onDelete(notice.id)}
-            className="absolute text-xl leading-none text-orange top-2 right-2 hover:text-orange-hover"
-            aria-label="삭제"
-          >
-            &times;
-          </button>
+
+          <p className="text-gray-700 text-sm mb-2">{notice.content}</p>
+
+          <p className="text-xs text-gray-400">{notice.createdAt}</p>
         </div>
       ))}
     </div>

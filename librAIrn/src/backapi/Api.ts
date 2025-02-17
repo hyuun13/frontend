@@ -29,9 +29,11 @@ import {
   DeleteNoticeData,
   DeleteRobotData,
   GetBookDetailData,
+  GetCode2Data,
   GetCodeData,
   InsertRobotData,
   InsertRobotPayload,
+  LeaveUser2Data,
   LeaveUserData,
   NoticeDeleteRequestDto,
   ResetArriveZoneData,
@@ -39,6 +41,7 @@ import {
   ReturnBookStartData,
   RobotDeleteRequestDto,
   SearchBook1Data,
+  SearchBook2Data,
   SearchBookData,
   SendOtpData,
   SendOtpRequestDto,
@@ -59,7 +62,6 @@ import {
   UserLoginData,
   UserLoginRequestDto,
   UserLogoutData,
-  UserLogoutRequestDto,
   UserRecordRequestDto,
   UserRobotRequestDto,
   UserSearchIdData,
@@ -68,6 +70,7 @@ import {
   UserSearchPwRequestDto,
   UserSignUpData,
   UserSignUpRequestDto,
+  ValidateRefreshTokenData,
   VerifyOtpData,
   VerifyOtpRequestDto,
 } from "./data-contracts";
@@ -166,9 +169,24 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/user/search
    * @response `200` `SearchBookData` OK
    */
-  searchBook = (data: UserRecordRequestDto, params: RequestParams = {}) =>
+  searchBook = (params: RequestParams = {}) =>
     this.request<SearchBookData, any>({
       path: `/api/user/search`,
+      method: "POST",
+      ...params,
+    });
+  /**
+   * @description 사용자의 마이 페이지에서 대출 현황을 클릭했을 때 요청되는 API 입니다.
+   *
+   * @tags user 도메인
+   * @name SearchBook2
+   * @summary 사용자 대출 기록 조회 - JWT 사용 x
+   * @request POST:/api/user/search2
+   * @response `200` `SearchBook2Data` OK
+   */
+  searchBook2 = (data: UserRecordRequestDto, params: RequestParams = {}) =>
+    this.request<SearchBook2Data, any>({
+      path: `/api/user/search2`,
       method: "POST",
       body: data,
       type: ContentType.Json,
@@ -200,9 +218,24 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/user/leave
    * @response `200` `LeaveUserData` OK
    */
-  leaveUser = (data: UserLeaveRequestDto, params: RequestParams = {}) =>
+  leaveUser = (params: RequestParams = {}) =>
     this.request<LeaveUserData, any>({
       path: `/api/user/leave`,
+      method: "POST",
+      ...params,
+    });
+  /**
+   * @description 사용자가 회원 탈퇴 시에 요청하는 API 입니다.
+   *
+   * @tags user 도메인
+   * @name LeaveUser2
+   * @summary 사용자 회원 탈퇴 - JWT 사용 x
+   * @request POST:/api/user/leave2
+   * @response `200` `LeaveUser2Data` OK
+   */
+  leaveUser2 = (data: UserLeaveRequestDto, params: RequestParams = {}) =>
+    this.request<LeaveUser2Data, any>({
+      path: `/api/user/leave2`,
       method: "POST",
       body: data,
       type: ContentType.Json,
@@ -285,12 +318,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/user/auth/logout
    * @response `200` `UserLogoutData` OK
    */
-  userLogout = (data: UserLogoutRequestDto, params: RequestParams = {}) =>
+  userLogout = (params: RequestParams = {}) =>
     this.request<UserLogoutData, any>({
       path: `/api/user/auth/logout`,
       method: "POST",
-      body: data,
-      type: ContentType.Json,
       ...params,
     });
   /**
@@ -325,6 +356,21 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       method: "POST",
       body: data,
       type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Access Token이 만료되었을 때, 클라이언트가 Refresh Token과 함께 요청을 보내서, 새로운 Access Token을 발급받는 데에 이용되는 API 입니다.
+   *
+   * @tags token 도메인
+   * @name ValidateRefreshToken
+   * @summary Access Token 다시 받기
+   * @request POST:/api/token
+   * @response `200` `ValidateRefreshTokenData` OK
+   */
+  validateRefreshToken = (params: RequestParams = {}) =>
+    this.request<ValidateRefreshTokenData, any>({
+      path: `/api/token`,
+      method: "POST",
       ...params,
     });
   /**
@@ -402,9 +448,24 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/code
    * @response `200` `GetCodeData` OK
    */
-  getCode = (data: CodeRequestDto, params: RequestParams = {}) =>
+  getCode = (params: RequestParams = {}) =>
     this.request<GetCodeData, any>({
       path: `/api/code`,
+      method: "POST",
+      ...params,
+    });
+  /**
+   * @description 사용자가 대출을 하기 위해 QR 코드를 요청하는 API 입니다.
+   *
+   * @tags QR 코드 도메인
+   * @name GetCode2
+   * @summary 사용자 QR 코드 조회 - JWT 사용 x
+   * @request POST:/api/code/2
+   * @response `200` `GetCode2Data` OK
+   */
+  getCode2 = (data: CodeRequestDto, params: RequestParams = {}) =>
+    this.request<GetCode2Data, any>({
+      path: `/api/code/2`,
       method: "POST",
       body: data,
       type: ContentType.Json,

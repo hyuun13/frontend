@@ -2,13 +2,6 @@ import { FC } from "react";
 import type { BookCardHorizontal } from "../../types/book";
 import { useNavigate } from "react-router-dom";
 
-/**
- * 가로형 카드 - 검색 결과, 내 책장, 대출 현황 등에서 사용
- * 사용 예시:
- *  - 검색 결과 페이지: 도서 표지, 제목, 작가, 상태(status), 청구기호(callNumber)
- *  - 내 책장 페이지: 도서 표지, 제목, 작가, 대출일(borrowAt), 반납일(returnAt)
- *  - 대출 현황 페이지: 도서 표지, 제목, 작가, 상태(status), 반납 예정일(plannedReturnDate)
- */
 const BookCardHorizontal: FC<BookCardHorizontal> = ({
   id,
   coverImageUrl,
@@ -19,9 +12,11 @@ const BookCardHorizontal: FC<BookCardHorizontal> = ({
   borrowAt,
   returnAt,
   plannedReturnDate,
+  disableClick,
 }) => {
   const navigate = useNavigate();
   const handleClick = () => {
+    if (disableClick) return;
     navigate(`/book/${id}`);
   };
   return (
@@ -54,7 +49,7 @@ const BookCardHorizontal: FC<BookCardHorizontal> = ({
               <span>도서상태 </span>
               <span
                 className={
-                  status === "대출 가능"
+                  ["대출 가능", "반납 완료"].includes(status)
                     ? "text-blue font-bold"
                     : "text-primary font-bold"
                 }

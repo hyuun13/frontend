@@ -238,7 +238,7 @@ const SignUpPage = () => {
                     disabled={isEmailChecked || !formData.email}
                     className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    확인
+                    중복 확인
                   </button>
                 </div>
               </div>
@@ -266,7 +266,7 @@ const SignUpPage = () => {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={isOtpVerified}
-                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2  bg-peach text-white rounded-md hover:bg-peach-hover focus:outline-none focus:ring-2 focus:ring-peach focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       인증번호 발송
                     </button>
@@ -310,7 +310,7 @@ const SignUpPage = () => {
                     disabled={isLoginIdChecked || !formData.loginId}
                     className="px-4 py-2 bg-primary text-white rounded-md hover:bg-orange-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    확인
+                    중복 확인
                   </button>
                 </div>
               </div>

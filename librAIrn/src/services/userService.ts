@@ -43,13 +43,16 @@ export const userLoginService = async (
     console.log("JWT Token:", token);
     console.log("Login Response Body:", response.data);
 
-    if (response.data && token) {
+    if (
+      response.data &&
+      typeof response.data.userId === "number" &&
+      typeof response.data.userName === "string" &&
+      token
+    ) {
       const { userId, userName } = response.data;
 
-      // ✅ Check if user is admin
       const isAdmin = userId >= 1 && userId <= 5;
 
-      // ✅ Store JWT & user info in localStorage
       localStorage.setItem("token", token);
       localStorage.setItem(
         "user",
@@ -75,7 +78,6 @@ export const userLogoutService = async (
     const response = await api.userLogout(payload);
 
     if (response.data) {
-      // localStorage 정리 (로그아웃 처리)
       localStorage.clear();
       return response.data;
     } else {
@@ -180,11 +182,10 @@ export const changePasswordService = async (
 };
 
 /** 대출 기록 조회 */
-export const fetchUserRecords = async (
-  userId: number
-): Promise<UserRecordDto[]> => {
+export const fetchUserRecords = async () //userId: number
+: Promise<UserRecordDto[]> => {
   try {
-    const response = await api.searchBook({ userId });
+    const response = await api.searchBook({});
     const data: UserRecordResponseDto = response.data;
 
     // userRecordList가 존재하면 반환하고, 없으면 빈 배열 반환
@@ -196,13 +197,12 @@ export const fetchUserRecords = async (
 };
 
 /** QR 코드 조회 */
-export const fetchUserQrCode = async (
-  userId: number
-): Promise<string | null> => {
+export const fetchUserQrCode = async () //userId: number
+: Promise<string | null> => {
   try {
     const response = await api.instance.post(
       `/api/code`,
-      { userId },
+      {},
       { responseType: "blob" }
     );
     const blob = response.data;

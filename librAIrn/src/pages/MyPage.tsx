@@ -23,7 +23,7 @@ const MyPage: FC = () => {
       if (!user) return;
 
       try {
-        const records = await fetchUserRecords(user.id);
+        const records = await fetchUserRecords();
         const now = dayjs();
         let borrowingCount = 0;
         let overdueCount = 0;
@@ -65,7 +65,7 @@ const MyPage: FC = () => {
     <div>
       <div className="container max-w-4xl px-4 py-8 mx-auto">
         <ProfileCard
-          userName={user.name}
+          userName={user.userName}
           borrowingCount={borrowStats.borrowingCount}
           overdueCount={borrowStats.overdueCount}
         />
@@ -75,7 +75,7 @@ const MyPage: FC = () => {
           <ul className="space-y-4">
             <li>
               <button
-                className="w-full text-left text-blue-500 hover:underline"
+                className="w-full text-left text-blue-hover hover:underline"
                 onClick={() => navigate("/my-info")}
               >
                 내 정보 관리
@@ -83,7 +83,7 @@ const MyPage: FC = () => {
             </li>
             <li>
               <button
-                className="w-full text-left text-blue-500 hover:underline"
+                className="w-full text-left  text-blue-hover hover:underline"
                 onClick={logout}
               >
                 로그아웃
@@ -91,7 +91,7 @@ const MyPage: FC = () => {
             </li>
             <li>
               <button
-                className="w-full text-left text-blue-500 hover:underline"
+                className="w-full text-left  text-blue-hover hover:underline"
                 onClick={() => navigate("/notices")}
               >
                 공지사항

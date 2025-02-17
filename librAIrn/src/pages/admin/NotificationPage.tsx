@@ -1,4 +1,3 @@
-// src/pages/admin/NotificationPage.tsx
 import { FC, useState, useEffect } from "react";
 import NotificationPanel from "../../components/admin/NotificationPanel";
 import type { Notice } from "../../types/notice";
@@ -6,6 +5,8 @@ import {
   fetchNoticeList,
   deleteNoticeService,
 } from "../../services/noticeService";
+import { formatTDate } from "../../utils/formatters";
+import dayjs from "dayjs";
 
 const NotificationPage: FC = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -19,16 +20,24 @@ const NotificationPage: FC = () => {
     try {
       const res = await fetchNoticeList();
       if (res?.noticeList) {
-        // NoticeDto를 types/notice.ts의 Notice 모델로 변환
+        // NoticeDto를 types/notice.ts의 Notice 모델로 변환 및 날짜 포맷팅 적용
         const transformed: Notice[] = res.noticeList.map((n) => ({
           id: n.noticeId ?? 0,
-          createdAt: n.noticeCreatedAt || "",
+          createdAt: formatTDate(n.noticeCreatedAt || ""),
           status: n.noticeStatus ?? false,
           type: n.noticeType || "",
           content: n.noticeContent || "",
           robotId: n.robotId,
         }));
-        setNotices(transformed);
+
+        // 최신순 정렬 (createdAt 기준)
+        const sortedNotices = transformed.sort((a, b) => {
+          const dateA = dayjs(a.createdAt === "-" ? 0 : a.createdAt);
+          const dateB = dayjs(b.createdAt === "-" ? 0 : b.createdAt);
+          return dateB.diff(dateA);
+        });
+
+        setNotices(sortedNotices);
       } else {
         setError("알림 정보를 불러오지 못했습니다.");
       }
@@ -65,12 +74,23 @@ const NotificationPage: FC = () => {
   return (
     <div className="min-h-screen py-8 bg-snow">
       <div className="container px-4 mx-auto">
+        {/* 제목 추가 */}
+        <h2 className="mt-6 mb-2 text-2xl font-bold">
+          <span className="text-primary">알림 내역</span>
+        </h2>
+
+        {/* 오류 메시지 */}
+        {error && <p className="text-orange">{error}</p>}
+
+        {/* 로딩 중 */}
         {loading ? (
           <p>로딩 중...</p>
-        ) : error ? (
-          <p className="text-orange">{error}</p>
         ) : notices.length === 0 ? (
-          <p>알림이 없습니다.</p>
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <p className="text-gray-600 text-lg font-semibold">
+              현재 알림이 없습니다.
+            </p>
+          </div>
         ) : (
           <NotificationPanel notices={notices} onDelete={handleDelete} />
         )}

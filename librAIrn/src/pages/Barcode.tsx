@@ -18,7 +18,7 @@ const QrcodePage: FC = () => {
     const fetchQrCode = async () => {
       try {
         setLoading(true);
-        const qrImageData = await fetchUserQrCode(user.id);
+        const qrImageData = await fetchUserQrCode();
         if (qrImageData) {
           setQrImage(qrImageData);
         } else {
@@ -33,7 +33,6 @@ const QrcodePage: FC = () => {
     };
 
     fetchQrCode();
-    console.log("현재 사용자 정보:", user);
   }, [user]);
 
   if (!user) {
@@ -57,7 +56,7 @@ const QrcodePage: FC = () => {
   return (
     <div>
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <h2 className="mb-6 text-2xl font-bold">회원 QR코드</h2>
+        <h2 className="mb-6 text-3xl font-bold">{user.userName}</h2>
         {loading ? (
           <p className="text-gray-500">로딩 중...</p>
         ) : qrImage ? (
@@ -67,7 +66,9 @@ const QrcodePage: FC = () => {
         ) : (
           <p className="text-gray-500">QR 코드를 표시할 수 없습니다.</p>
         )}
-        <p className="mt-4 text-gray-700">위의 QR코드를 카메라에 가까이</p>
+        <p className="mt-4 text-gray-700">
+          QR코드로 책을 대출하실 수 있습니다.
+        </p>
       </div>
     </div>
   );

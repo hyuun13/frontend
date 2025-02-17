@@ -22,15 +22,13 @@ import { checkUnreadNoticeService } from "../../services/noticeService";
 const Header: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isWideScreen = useMediaQuery({ query: "(min-width: 768px)" });
   const [unreadCount, setUnreadCount] = useState(0);
   const [isHidden, setIsHidden] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-  const isAdmin = user && user.id >= 1 && user.id <= 5;
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -50,7 +48,7 @@ const Header: FC = () => {
 
   const pageTitles: { [key: string]: string } = {
     "/bookshelf": "내 책장",
-    "/qrcode": "바코드",
+    "/qrcode": "모바일 회원증",
     "/my": "마이 페이지",
     "/admin/add": "도서 관리",
     "/admin/robot": "로봇 관리",
@@ -61,36 +59,31 @@ const Header: FC = () => {
 
   const commonLinks = [
     { to: "/", icon: <Home size={20} />, label: "홈" },
-    ...(isAdmin
-      ? [
-          {
-            to: "/admin/add",
-            icon: <BookPlus size={20} />,
-            label: "도서 관리",
-          },
-          { to: "/admin/robot", icon: <Bot size={20} />, label: "로봇 관리" },
-          {
-            to: "/admin/collection",
-            icon: <MapPinned size={20} />,
-            label: "회수 현황",
-          },
-        ]
-      : [
-          {
-            to: "/bookshelf",
-            icon: <BookMarked size={20} />,
-            label: "내 책장",
-          },
-          { to: "/qrcode", icon: <QrCode size={20} />, label: "바코드" },
-          { to: "/my", icon: <User size={20} />, label: "마이" },
-        ]),
+    { to: "/bookshelf", icon: <BookMarked size={20} />, label: "내 책장" },
+    { to: "/qrcode", icon: <QrCode size={20} />, label: "모바일 회원증" },
+    { to: "/my", icon: <User size={20} />, label: "마이" },
   ];
 
+  // ✅ 관리자일 경우 추가적으로 볼 수 있는 메뉴
+  const adminLinks = [
+    { to: "/admin/add", icon: <BookPlus size={20} />, label: "도서 관리" },
+    { to: "/admin/robot", icon: <Bot size={20} />, label: "로봇 관리" },
+    {
+      to: "/admin/collection",
+      icon: <MapPinned size={20} />,
+      label: "회수 현황",
+    },
+  ];
+
+  // ✅ 관리자일 경우 일반 메뉴 + 관리자 메뉴 포함
+  const menuLinks = isAdmin ? [...commonLinks, ...adminLinks] : commonLinks;
+
+  // ✅ 메뉴 렌더링 함수 (모든 사용자에게 `commonLinks` 보이고, 관리자는 `adminLinks` 추가)
   const renderMenuItems = () => (
     <ul
       className={`flex ${isWideScreen ? "flex-row space-x-4" : "flex-col space-y-4"}`}
     >
-      {commonLinks.map((link) => (
+      {menuLinks.map((link) => (
         <motion.li
           key={link.to}
           whileHover={{ scale: 1.05 }}
@@ -111,7 +104,7 @@ const Header: FC = () => {
         <button
           onClick={() => {
             logout();
-            if (!isWideScreen) toggleMenu(); // Close the menu on mobile after logout
+            if (!isWideScreen) toggleMenu();
           }}
           className="flex items-center p-2 text-gray-700 transition-colors duration-200 hover:text-orange"
         >

@@ -34,11 +34,6 @@ export interface UserSignUpResponseDto {
   isDone?: boolean;
 }
 
-export interface UserRecordRequestDto {
-  /** @format int32 */
-  userId?: number;
-}
-
 export interface UserRecordDto {
   bookIsbn?: string;
   /** @format date-time */
@@ -56,6 +51,11 @@ export interface UserRecordResponseDto {
   userRecordList?: UserRecordDto[];
 }
 
+export interface UserRecordRequestDto {
+  /** @format int32 */
+  userId?: number;
+}
+
 export interface UserRobotRequestDto {
   /** @format int32 */
   robotId?: number;
@@ -67,14 +67,14 @@ export interface UserRobotResponseDto {
   isDone?: boolean;
 }
 
-export interface UserLeaveRequestDto {
-  /** @format int32 */
-  userId?: number;
-}
-
 export interface UserLeaveResponseDto {
   message?: string;
   isDone?: boolean;
+}
+
+export interface UserLeaveRequestDto {
+  /** @format int32 */
+  userId?: number;
 }
 
 export interface UserFrontRequestDto {
@@ -124,24 +124,20 @@ export interface UserSearchIdResponseDto {
   isDone?: boolean;
 }
 
-export interface UserLogoutRequestDto {
-  userId?: string;
-}
-
 export interface UserLogoutResponseDto {
   message?: string;
   isDone?: boolean;
 }
 
 export interface UserLoginRequestDto {
-  userLoginId: string;
-  userPassword: string;
+  userLoginId?: string;
+  userPassword?: string;
 }
 
 export interface UserLoginResponseDto {
   /** @format int32 */
-  userId: number;
-  userName: string;
+  userId?: number;
+  userName?: string;
 }
 
 export interface UserChangeRequestDto {
@@ -157,6 +153,11 @@ export interface UserChangeRequestDto {
 }
 
 export interface UserChangeResponseDto {
+  message?: string;
+  isDone?: boolean;
+}
+
+export interface BaseResponseDto {
   message?: string;
   isDone?: boolean;
 }
@@ -435,9 +436,13 @@ export type UserSignUpData = UserSignUpResponseDto;
 
 export type SearchBookData = UserRecordResponseDto;
 
+export type SearchBook2Data = UserRecordResponseDto;
+
 export type UserInfoRobotData = UserRobotResponseDto;
 
 export type LeaveUserData = UserLeaveResponseDto;
+
+export type LeaveUser2Data = UserLeaveResponseDto;
 
 export type UserInfoFrontData = UserFrontResponseDto;
 
@@ -453,6 +458,8 @@ export type UserLoginData = UserLoginResponseDto;
 
 export type UserChangePwData = UserChangeResponseDto;
 
+export type ValidateRefreshTokenData = BaseResponseDto;
+
 export type VerifyOtpData = VerifyOtpResponseDto;
 
 export type SendOtpData = SendOtpResponseDto;
@@ -463,6 +470,9 @@ export type DeleteNoticeData = NoticeDeleteResponseDto;
 
 /** @format byte */
 export type GetCodeData = string;
+
+/** @format byte */
+export type GetCode2Data = string;
 
 export type UpdateBookData = BookUpdateResponseDto;
 
