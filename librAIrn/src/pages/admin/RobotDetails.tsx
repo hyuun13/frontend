@@ -1,5 +1,3 @@
-"use client";
-
 import { type FC, useState, useEffect, useRef, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -160,7 +158,7 @@ const RobotDetail: FC = () => {
         const res = await deleteRobotService({ robotId });
         if (res && res.isDone) {
           alert("로봇 삭제가 완료되었습니다.");
-          navigate("/admin/robots");
+          navigate("/admin/robot", { replace: true });
         } else {
           alert("로봇 삭제에 실패했습니다.");
         }

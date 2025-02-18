@@ -3,7 +3,6 @@ import { Api } from "../backapi/Api";
 import {
   UserLoginRequestDto,
   UserLoginData,
-  UserLogoutRequestDto,
   UserLogoutData,
   UserSignUpRequestDto,
   UserSignUpResponseDto,
@@ -23,6 +22,7 @@ import {
   UserRecordResponseDto,
   UserInfoFrontData,
   UserFrontRequestDto,
+  LeaveUserData,
 } from "../backapi/data-contracts";
 
 const api = new Api();
@@ -71,11 +71,9 @@ export const userLoginService = async (
 };
 
 /** 사용자 로그아웃 */
-export const userLogoutService = async (
-  payload: UserLogoutRequestDto
-): Promise<UserLogoutData | null> => {
+export const userLogoutService = async (): Promise<UserLogoutData | null> => {
   try {
-    const response = await api.userLogout(payload);
+    const response = await api.userLogout();
 
     if (response.data) {
       localStorage.clear();
@@ -229,3 +227,22 @@ export const fetchUserInfoService = async (
     return null;
   }
 };
+
+// 회원 탈퇴
+export const userWithdrawalService =
+  async (): Promise<LeaveUserData | null> => {
+    try {
+      const response = await api.leaveUser();
+      if (response.data) {
+        console.log("회원 탈퇴 성공:", response.data);
+        localStorage.clear();
+        return response.data;
+      } else {
+        console.error("회원 탈퇴 실패: 응답 데이터 없음");
+        return null;
+      }
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+      return null;
+    }
+  };

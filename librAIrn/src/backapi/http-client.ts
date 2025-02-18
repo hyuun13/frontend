@@ -87,67 +87,61 @@ export class HttpClient<SecurityDataType = unknown> {
     });
 
     // 응답 인터셉터: 401 발생 시 토큰 갱신 처리
-    this.instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
+    // this.instance.interceptors.response.use(
+    //   (response) => response,
+    //   async (error) => {
+    //     const originalRequest = error.config;
 
-        // `originalRequest`가 없거나 `_retry`가 이미 설정되었으면 종료
-        if (!originalRequest || originalRequest._retry) {
-          return Promise.reject(error);
-        }
+    //     // `originalRequest`가 없거나 `_retry`가 이미 설정되었으면 종료
+    //     if (!originalRequest || originalRequest._retry) {
+    //       return Promise.reject(error);
+    //     }
+    //     if (error.response?.status === 401) {
+    //       console.log("Access Token 만료, 새로운 토큰 요청");
 
-        // `refreshToken`이 없으면 즉시 로그아웃 처리
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) {
-          console.error("Refresh token이 없습니다. 로그아웃 처리.");
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
-          return Promise.reject(error);
-        }
+    //       originalRequest._retry = true; // 리트라이 방지 플래그
 
-        originalRequest._retry = true; //  중복 요청 방지
+    //       try {
+    //         const api = new Api();
+    //         const refreshResponse = await api.validateRefreshToken();
 
-        try {
-          const api = new Api();
-          const refreshResponse = await api.validateRefreshToken({
-            headers: {
-              Authorization: `Bearer ${refreshToken}`,
-            },
-          });
+    //         //  새로운 Access Token 가져오기
+    //         const newAccessToken =
+    //           refreshResponse.headers["authorization"]?.split("Bearer ")[1];
 
-          //  새로운 Access Token 가져오기
-          const newAccessToken =
-            refreshResponse.headers["authorization"]?.split("Bearer ")[1];
+    //         if (!newAccessToken) {
+    //           throw new Error("새로운 Access Token을 찾을 수 없음");
+    //         }
 
-          if (!newAccessToken) {
-            throw new Error("New Access Token not found in headers");
-          }
+    //         //  새로운 토큰 저장
+    //         localStorage.setItem("token", newAccessToken);
+    //         this.instance.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
 
-          //  새로운 토큰 저장
-          localStorage.setItem("token", newAccessToken);
+    //         // 기존 요청에 새 토큰 추가 후 재시도
+    //         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+    //         return this.instance(originalRequest);
+    //       } catch (refreshError) {
+    //         console.error("토큰 갱신 실패:", refreshError);
+    //         return this.logoutAndRedirect();
+    //       }
+    //     }
 
-          // 기존 요청에 새 토큰 추가 후 재시도
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return this.instance(originalRequest);
-        } catch (refreshError) {
-          console.error("토큰 갱신 실패:", refreshError);
-
-          //  refreshToken 요청도 실패 → 로그아웃 처리
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login"; // 로그인 페이지로 이동
-        }
-
-        return Promise.reject(error);
-      }
-    );
+    //     return Promise.reject(error);
+    //   }
+    // );
 
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
   }
+
+  // 로그아웃 및 헤더 초기화 후 로그인 페이지 이동
+  logoutAndRedirect = () => {
+    localStorage.clear();
+    delete this.instance.defaults.headers.Authorization;
+    console.log("로그아웃되었습니다.");
+    window.location.replace("/login");
+  };
 
   public setSecurityData = (data: SecurityDataType | null) => {
     this.securityData = data;

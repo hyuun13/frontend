@@ -6,7 +6,11 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { userLoginService, userLogoutService } from "../services/userService";
+import {
+  userLoginService,
+  userLogoutService,
+  userWithdrawalService,
+} from "../services/userService";
 import { User } from "../types/user";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +19,7 @@ interface AuthContextType {
   user: User | null;
   login: (loginId: string, password: string) => Promise<boolean>;
   logout: () => void;
+  withdraw: () => void;
   isAdmin: boolean;
 }
 
@@ -55,16 +60,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await userLogoutService({});
+    await userLogoutService();
     localStorage.clear();
     setToken(null);
     setUser(null);
     navigate("/");
   };
 
+  const withdraw = async () => {
+    const result = await userWithdrawalService();
+    if (result) {
+      console.log("회원탈퇴 성공");
+      logout();
+    } else {
+      console.log("회원탈퇴 실패");
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ token, user, login, logout, isAdmin: user?.isAdmin || false }}
+      value={{
+        token,
+        user,
+        login,
+        logout,
+        withdraw,
+        isAdmin: user?.isAdmin || false,
+      }}
     >
       {children}
     </AuthContext.Provider>

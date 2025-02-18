@@ -69,7 +69,7 @@ const CardContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 export default function ChangePassword() {
-  const { user } = useAuth();
+  const { user, withdraw } = useAuth();
   const { showToast } = useToast(); // 전역 토스트 사용
   const navigate = useNavigate();
 
@@ -89,7 +89,7 @@ export default function ChangePassword() {
 
     try {
       const response = await changePasswordService({
-        userId: user.id,
+        userId: user.userId,
         userPassword: currentPassword,
         action: 0,
       });
@@ -125,7 +125,7 @@ export default function ChangePassword() {
 
     try {
       const updateResponse = await changePasswordService({
-        userId: user.id,
+        userId: user.userId,
         userPassword: newPassword,
         action: 1,
       });
@@ -151,11 +151,19 @@ export default function ChangePassword() {
     }
   };
 
+  const handleWithdraw = async () => {
+    const confirmed = window.confirm("정말로 회원 탈퇴하시겠습니까?");
+    if (confirmed) {
+      await withdraw();
+      showToast("회원 탈퇴가 완료되었습니다.", "success");
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-snow">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h2 className="text-2xl font-bold">비밀번호 변경</h2>
+          <h2 className="text-2xl font-bold">내 정보 관리</h2>
         </CardHeader>
         <CardContent>
           <AnimatePresence mode="wait">
@@ -218,6 +226,9 @@ export default function ChangePassword() {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "변경 중..." : "비밀번호 변경"}
                   </Button>
+                  <button onClick={handleWithdraw} style={{ color: "red" }}>
+                    회원 탈퇴
+                  </button>
                 </div>
               </motion.form>
             )}

@@ -9,7 +9,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin }) => {
   const { user } = useAuth();
 
   if (!user) {
-    // ✅ 로그인되지 않은 경우 → 로그인 페이지로 리디렉트
     return <Navigate to="/login" replace />;
   }
 

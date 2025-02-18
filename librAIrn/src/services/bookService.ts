@@ -8,7 +8,6 @@ import type {
   BookBorrowRequestDto,
   BookBorrowResponseDto,
   BookSearchResponseDto,
-  // BookMostListRequestDto,
   BookFrontRequestDto,
   BookInfoFrontData,
   BookDetailResponseDto,

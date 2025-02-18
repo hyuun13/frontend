@@ -89,14 +89,6 @@ const MyPage: FC = () => {
                 로그아웃
               </button>
             </li>
-            <li>
-              <button
-                className="w-full text-left  text-blue-hover hover:underline"
-                onClick={() => navigate("/notices")}
-              >
-                공지사항
-              </button>
-            </li>
           </ul>
         </div>
       </div>
