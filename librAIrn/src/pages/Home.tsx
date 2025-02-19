@@ -39,12 +39,18 @@ const Home: FC = () => {
         try {
           const cachedData = JSON.parse(cachedDataStr);
           const { weeklyBooks, monthlyBooks, timestamp } = cachedData;
-          if (Date.now() - timestamp < ONE_WEEK_MS) {
-            // Cached data is valid, so use it
+
+          if (
+            Array.isArray(weeklyBooks) &&
+            Array.isArray(monthlyBooks) &&
+            weeklyBooks.length > 0 &&
+            monthlyBooks.length > 0 &&
+            Date.now() - timestamp < ONE_WEEK_MS
+          ) {
             setWeeklyBooks(weeklyBooks);
             setMonthlyBooks(monthlyBooks);
             setLoading(false);
-            return;
+            return; // Use cached data; no need to fetch from API
           }
         } catch (error) {
           console.error("Error parsing cached data", error);
