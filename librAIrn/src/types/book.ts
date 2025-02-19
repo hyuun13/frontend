@@ -1,5 +1,3 @@
-// src/types/book.ts
-
 // 기본 도서 정보 인터페이스
 export interface BookBase {
   id?: string; // 책 고유 식별자 (book id)

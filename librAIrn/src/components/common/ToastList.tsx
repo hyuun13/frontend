@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "../../hooks/useToast";
 
 const ToastList: React.FC = () => {
-  const { toasts } = useToast(); // 전역 상태에서 toasts 가져오기
+  const { toasts } = useToast();
 
   return (
     <div className="fixed bottom-4 right-4 space-y-2">

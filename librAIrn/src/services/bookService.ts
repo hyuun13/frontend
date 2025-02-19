@@ -1,4 +1,3 @@
-// src/services/bookService.ts
 import { Api } from "../backapi/Api";
 import type {
   BookUpdateRequestDto,

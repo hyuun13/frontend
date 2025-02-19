@@ -13,11 +13,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin }) => {
   }
 
   if (requireAdmin && !user.isAdmin) {
-    // ✅ 일반 사용자가 관리자 페이지에 접근 시 → 홈으로 리디렉트
     return <Navigate to="/" replace />;
   }
 
-  return <Outlet />; // ✅ 정상 접근 시, 해당 컴포넌트 렌더링
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

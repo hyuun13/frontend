@@ -1,4 +1,3 @@
-// src/services/noticeService.ts
 import { Api } from "../backapi/Api";
 import type {
   NoticeDeleteRequestDto,

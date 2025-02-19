@@ -31,13 +31,11 @@ export const useToastContext = () => {
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // showToast 함수를 useCallback으로 메모이제이션
   const showToast = useCallback(
     (message: string, type: "success" | "error") => {
       const newToast: Toast = { message, type };
       setToasts((prevToasts) => [...prevToasts, newToast]);
 
-      // 3초 후 자동으로 제거
       setTimeout(() => {
         setToasts((prevToasts) => prevToasts.slice(1));
       }, 3000);

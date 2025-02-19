@@ -1,4 +1,3 @@
-// src/components/common/NotificationPanel.tsx
 import { FC } from "react";
 import type { Notice } from "../../types/notice";
 

@@ -1,4 +1,3 @@
-// src/utils/fillBookDetailsKakao.ts
 import axios from "axios";
 import { BookBase } from "../types/book";
 

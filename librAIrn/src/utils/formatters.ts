@@ -1,4 +1,3 @@
-// src/utils/formatters.ts
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -33,13 +32,10 @@ export const formatDate = (dateString: string): string => {
 };
 
 export const formatTitle = (title: string): string => {
-  // 첫 번째 괄호가 나오는 위치를 찾음
   const bracketIndex = title.indexOf("(");
 
-  // 괄호가 없으면 원본 제목 반환
   if (bracketIndex === -1) return title;
 
-  // 괄호 이전까지의 문자열을 반환하고 앞뒤 공백 제거
   return title.substring(0, bracketIndex).trim();
 };
 

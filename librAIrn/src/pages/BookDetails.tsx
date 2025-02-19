@@ -1,4 +1,3 @@
-// src/pages/BookDetail.tsx
 import { FC, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useBookDetails } from "../hooks/useBookDetails";
@@ -75,7 +74,6 @@ const BookDetail: FC = () => {
         <div className="md:flex md:items-center md:space-x-6">
           <BookCover imageUrl={book.coverImageUrl} title={book.title} />
 
-          {/* ✅ Show Book Info OR Edit Form */}
           <div className="w-full overflow-hidden transition-all duration-300 bg-white shadow-xl backdrop-blur-md rounded-xl hover:shadow-xl">
             {isEditing ? (
               <BookEditForm book={book} setIsEditing={setIsEditing} />

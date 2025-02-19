@@ -1,4 +1,3 @@
-// src/services/arriveZoneService.ts
 import { Api } from "../backapi/Api";
 import type {
   ArriveZoneResetRequestDto,

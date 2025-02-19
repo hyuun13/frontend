@@ -30,7 +30,7 @@ const NotificationPage: FC = () => {
           robotId: n.robotId,
         }));
 
-        // 최신순 정렬 (createdAt 기준)
+        // 최신순 정렬
         const sortedNotices = transformed.sort((a, b) => {
           const dateA = dayjs(a.createdAt === "-" ? 0 : a.createdAt);
           const dateB = dayjs(b.createdAt === "-" ? 0 : b.createdAt);
@@ -74,15 +74,12 @@ const NotificationPage: FC = () => {
   return (
     <div className="min-h-screen py-8 bg-snow">
       <div className="container px-4 mx-auto">
-        {/* 제목 추가 */}
         <h2 className="mt-6 mb-2 text-2xl font-bold">
           <span className="text-primary">알림 내역</span>
         </h2>
 
-        {/* 오류 메시지 */}
         {error && <p className="text-orange">{error}</p>}
 
-        {/* 로딩 중 */}
         {loading ? (
           <p>로딩 중...</p>
         ) : notices.length === 0 ? (

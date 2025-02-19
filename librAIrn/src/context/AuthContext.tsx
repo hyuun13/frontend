@@ -1,4 +1,3 @@
-//context/AuthContext.tsx
 import {
   createContext,
   useContext,

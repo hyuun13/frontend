@@ -1,11 +1,9 @@
-// src/hooks/useRobot.ts
 import { useState, useEffect } from "react";
 import { fetchRobotList, fetchRobotLog } from "../services/robotService"; // 서비스 함수 (백엔드 API 호출)
 import type { Robot, RobotLog } from "../types/robot";
 
 /**
- * useRobot 훅은 백엔드 API를 통해 로봇 리스트를 가져온 후
- * types/robot.ts에 정의된 Robot 도메인 모델로 변환하여 반환합니다.
+ * 백엔드 API를 통해 로봇 리스트를 가져온 후, types/robot.ts에 정의된 Robot 도메인 모델로 변환하여 반환
  */
 export const useRobot = (): {
   robots: Robot[];
@@ -27,7 +25,7 @@ export const useRobot = (): {
           const transformed: Robot[] = res.robotList.map((r) => ({
             id: r.robotId ?? 0,
             name: r.robotName || "Unknown Robot",
-            imageUrl: r.robotImageUrl, // 값이 없으면 undefined
+            imageUrl: r.robotImageUrl,
             status: r.robotStatus || "Unknown",
           }));
           setRobots(transformed);
@@ -49,10 +47,7 @@ export const useRobot = (): {
 };
 
 /**
- * useRobotLog 훅은 특정 로봇의 로그 데이터를 백엔드에서 가져와
- * types/robot.ts에 정의된 RobotLog 도메인 모델로 변환하여 반환합니다.
- *
- * @param robotId 조회할 로봇의 ID
+ * 특정 로봇의 로그 데이터를 백엔드에서 가져와 types/robot.ts에 정의된 RobotLog 도메인 모델로 변환하여 반환
  */
 export const useRobotLog = (
   robotId: number
@@ -73,7 +68,7 @@ export const useRobotLog = (
       try {
         const res = await fetchRobotLog(robotId);
         if (res && res.robotLogList && res.robotLogList.length > 0) {
-          // 백엔드의 RobotLogDto를 도메인 모델 RobotLog으로 변환합니다.
+          // 백엔드의 RobotLogDto를 도메인 모델 RobotLog으로 변환
           const transformed: RobotLog[] = res.robotLogList.map((log) => ({
             type: log.robotLogType || "Unknown",
             content: log.robotLogContent || "",

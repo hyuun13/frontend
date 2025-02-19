@@ -1,4 +1,3 @@
-// src/pages/SearchResults.tsx
 import "../styles/custom.css";
 import { FC, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -9,7 +8,6 @@ import BookCardHorizontalComponent from "../components/common/BookCardHorizontal
 import SearchBarv2 from "../components/common/SearchBarv2";
 import { transformBookDtoToBookCardHorizontal } from "../utils/transformers";
 
-// Skeleton UI 컴포넌트 (실제 카드와 유사한 크기 및 레이아웃)
 const BookCardSkeleton: FC = () => {
   return (
     <div className="flex p-6 space-x-4 border border-gray-200 rounded-lg animate-pulse">
@@ -45,11 +43,9 @@ const SearchResults: FC = () => {
       try {
         const response = await searchBookService(searchStr, action);
         if (response?.bookList && response.bookList.length > 0) {
-          // 응답 데이터를 프론트엔드 모델로 변환
           const transformedBooks = response.bookList.map(
             transformBookDtoToBookCardHorizontal
           );
-          // Kakao API로 책 정보 보충 (10건씩 처리)
           const filledBooks = await Promise.all(
             transformedBooks.map((book) => fillBookDetailsKakao(book))
           );

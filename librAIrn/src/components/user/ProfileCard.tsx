@@ -1,4 +1,3 @@
-// src/components/common/ProfileCard.tsx (사용자 전용)
 import { FC } from "react";
 
 interface ProfileCardProps {

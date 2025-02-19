@@ -30,7 +30,6 @@ const MyPage: FC = () => {
 
         records.forEach((record) => {
           if (!record.returnAt) {
-            // returnAt이 없는 경우만 처리
             const borrowDate = dayjs(record.borrowAt);
             const dueDate = borrowDate.add(2, "week");
 

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../hooks/useToast";
 
-// Button 컴포넌트
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
@@ -24,7 +23,6 @@ const Button: React.FC<ButtonProps> = ({
   </button>
 );
 
-// Input 컴포넌트
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
@@ -36,7 +34,6 @@ const Input: React.FC<InputProps> = ({ className = "", ...props }) => (
   />
 );
 
-// Label 컴포넌트
 const Label: React.FC<{
   children: React.ReactNode;
   className?: string;
@@ -50,7 +47,6 @@ const Label: React.FC<{
   </label>
 );
 
-// Card 컴포넌트
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className = "",
@@ -70,7 +66,7 @@ const CardContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export default function ChangePassword() {
   const { user, withdraw } = useAuth();
-  const { showToast } = useToast(); // 전역 토스트 사용
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -136,7 +132,7 @@ export default function ChangePassword() {
             message: "비밀번호가 성공적으로 변경되었습니다.",
             type: "success",
           },
-          replace: true, // 브라우저 기록에 남기지 않음
+          replace: true,
         });
       } else {
         showToast("비밀번호 변경에 실패했습니다. 다시 시도해주세요.", "error");

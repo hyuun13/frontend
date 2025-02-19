@@ -1,4 +1,3 @@
-// src/utils/transformers.ts
 import type { BookCardHorizontal } from "../types/book";
 import type { BookCardVertical } from "../types/book";
 import { User } from "../types/user";
@@ -7,12 +6,7 @@ import {
   BookFrontResponseDto,
 } from "../backapi/data-contracts";
 
-/**
- * UserLoginResponseDto를 User로 변환합니다.
- * @param response UserLoginResponseDto - 백엔드에서 반환된 사용자 응답
- * @param loginId string - 로그인 시 사용된 로그인 아이디
- * @returns User 타입의 객체
- */
+// 백엔드 응답을 User 타입으로 변환하는 함수
 export const mapUserLoginResponseToUser = (
   response: UserLoginResponseDto
 ): User => {

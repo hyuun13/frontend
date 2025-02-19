@@ -15,14 +15,14 @@ const MyBookShelf: FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    let isMounted = true; // ✅ 컴포넌트 마운트 여부 확인
+    let isMounted = true;
 
     const fetchAndTransformRecords = async () => {
       setLoading(true);
       setError(null);
       try {
         const records = (await fetchUserRecords()) || [];
-        if (!isMounted) return; // 컴포넌트가 언마운트되었으면 실행 중단
+        if (!isMounted) return;
         const transformedBooks = await Promise.all(
           records.map(async (record) => {
             const transformed = transformBookDtoToBookCardHorizontal(record);
@@ -30,7 +30,7 @@ const MyBookShelf: FC = () => {
 
             return {
               ...filledBook,
-              id: record.bookIsbn || "", // ISBN을 대체 식별자로 사용
+              id: record.bookIsbn || "",
               status: record.status || "-",
               borrowAt: record.borrowAt || "-",
               returnAt: record.returnAt || "-",
@@ -38,11 +38,10 @@ const MyBookShelf: FC = () => {
           })
         );
 
-        // 최신 대출일 순으로 정렬
         const sortedBooks = transformedBooks.sort((a, b) => {
           const dateA = dayjs(a.borrowAt === "-" ? 0 : a.borrowAt);
           const dateB = dayjs(b.borrowAt === "-" ? 0 : b.borrowAt);
-          return dateB.diff(dateA); // 최신순으로 정렬
+          return dateB.diff(dateA);
         });
 
         if (isMounted) {
@@ -58,7 +57,7 @@ const MyBookShelf: FC = () => {
 
     fetchAndTransformRecords();
     return () => {
-      isMounted = false; // 컴포넌트가 언마운트되면 API 요청 중단
+      isMounted = false;
     };
   }, [user]);
 
@@ -94,7 +93,7 @@ const MyBookShelf: FC = () => {
             <div className="space-y-6">
               {bookRecords.map((book) => (
                 <BookCardHorizontalComponent
-                  key={`${book.id}-${book.borrowAt}-${book.returnAt}`} //  중복 방지
+                  key={`${book.id}-${book.borrowAt}-${book.returnAt}`}
                   {...book}
                   borrowAt={formatTDate(book.borrowAt)}
                   returnAt={formatTDate(book.returnAt)}

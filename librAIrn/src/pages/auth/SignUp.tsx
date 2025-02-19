@@ -40,7 +40,7 @@ const SignUpPage = () => {
   const [isLoginIdChecked, setIsLoginIdChecked] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastProps | null>(null);
-  // 비밀번호가 입력될 때마다 조건에 맞는지 즉시 확인
+
   useEffect(() => {
     if (formData.password.length > 0) {
       if (!isValidPassword(formData.password)) {

@@ -1,4 +1,3 @@
-// src/utils/fillBookDetailsNaver.ts
 import axios from "axios";
 import type { DetailedBook } from "../types/book";
 import { formatTitle } from "./formatters";

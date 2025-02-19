@@ -33,7 +33,7 @@ const Home: FC = () => {
     const fetchBooks = async () => {
       setLoading(true);
       setError(null);
-      // Check if cached data exists and is still valid (less than one week old)
+
       const cachedDataStr = localStorage.getItem("bookCache");
       if (cachedDataStr) {
         try {
@@ -50,14 +50,13 @@ const Home: FC = () => {
             setWeeklyBooks(weeklyBooks);
             setMonthlyBooks(monthlyBooks);
             setLoading(false);
-            return; // Use cached data; no need to fetch from API
+            return;
           }
         } catch (error) {
           console.error("Error parsing cached data", error);
         }
       }
 
-      // If no valid cache exists, fetch fresh data
       try {
         const [weeklyResponse, monthlyResponse] = await Promise.all([
           bookMostService(0),
@@ -101,7 +100,6 @@ const Home: FC = () => {
         setWeeklyBooks(filledWeeklyBooks);
         setMonthlyBooks(filledMonthlyBooks);
 
-        // Cache the data along with a timestamp
         const cacheData = {
           weeklyBooks: filledWeeklyBooks,
           monthlyBooks: filledMonthlyBooks,

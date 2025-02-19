@@ -1,4 +1,3 @@
-// src/hooks/useBookDetails.ts
 import { useState, useEffect } from "react";
 import { fetchBookDetails } from "../services/bookService";
 import { fillBookDetailsNaver } from "../utils/fillBookDetailsNaver";

@@ -1,4 +1,3 @@
-// src/services/robotService.ts
 import { Api } from "../backapi/Api";
 import type {
   RobotResponseDto,

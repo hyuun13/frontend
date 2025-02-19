@@ -66,7 +66,7 @@ const BookEditForm: FC<{
           setTimeout(() => {
             navigate("/");
           }, 2000);
-          setIsEditing(false); // 삭제 후 편집 모드 종료
+          setIsEditing(false);
         } else {
           showToast("도서 삭제에 실패했습니다.", "error");
         }

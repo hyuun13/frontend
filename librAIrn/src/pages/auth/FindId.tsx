@@ -7,8 +7,8 @@ const FindId: React.FC = () => {
   const [userEmail, setUserEmail] = useState("");
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast(); // 토스트 훅 사용
-  const navigate = useNavigate(); // 페이지 이동 훅 사용
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +65,6 @@ const FindId: React.FC = () => {
             />
           </div>
 
-          {/* 버튼: 상태에 따라 '아이디 찾기' 또는 '로그인 하러 가기' */}
           <button
             type={resultMessage ? "button" : "submit"}
             onClick={resultMessage ? handleLoginRedirect : undefined}

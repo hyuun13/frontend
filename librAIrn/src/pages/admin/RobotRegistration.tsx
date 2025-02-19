@@ -1,4 +1,3 @@
-// src/pages/admin/RobotRegistration.tsx
 import { FC, useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { insertRobotService } from "../../services/robotService";
@@ -40,7 +39,6 @@ const RobotRegistration: FC = () => {
     setLoading(true);
 
     try {
-      // ✅ Create FormData instead of JSON object
       const formData = new FormData();
       formData.append("robotImage", robotImage); // File
       formData.append(
@@ -48,7 +46,6 @@ const RobotRegistration: FC = () => {
         new Blob([JSON.stringify({ robotName })], { type: "application/json" }) // JSON as Blob
       );
 
-      // ✅ Call API with FormData
       const res = await insertRobotService(formData);
 
       if (res && res.isDone) {

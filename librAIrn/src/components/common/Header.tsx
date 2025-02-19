@@ -64,7 +64,6 @@ const Header: FC = () => {
     { to: "/my", icon: <User size={20} />, label: "마이" },
   ];
 
-  // 관리자일 경우 추가적으로 볼 수 있는 메뉴
   const adminLinks = [
     { to: "/admin/add", icon: <BookPlus size={20} />, label: "도서 관리" },
     { to: "/admin/robot", icon: <Bot size={20} />, label: "로봇 관리" },
@@ -75,10 +74,8 @@ const Header: FC = () => {
     },
   ];
 
-  // 관리자일 경우 일반 메뉴 + 관리자 메뉴 포함
   const menuLinks = isAdmin ? [...commonLinks, ...adminLinks] : commonLinks;
 
-  // 메뉴 렌더링 함수 (모든 사용자에게 `commonLinks` 보이고, 관리자는 `adminLinks` 추가)
   const renderMenuItems = () => (
     <ul
       className={`flex ${isWideScreen ? "flex-row space-x-4" : "flex-col space-y-4"}`}
