@@ -7,7 +7,7 @@ import {
 } from "../../services/bookService";
 import { fetchUserInfoService } from "../../services/userService";
 import BookCardVertical from "../../components/common/BookCardVertical";
-import { fillBookDetailsNaver } from "../../utils/fillBookDetailsNaver";
+import { fillBookDetailsKakao2 } from "../../utils/fillBookDetailsNaver";
 import { mapToBookCardVertical } from "../../utils/transformers";
 import { BookBorrowRequestDto } from "../../backapi/data-contracts";
 import { isBookCardVertical } from "../../utils/validators";
@@ -165,7 +165,7 @@ export default function RobotHome() {
       () => fetchBookInfoFront({ robotId }),
       async (book) => {
         let enrichedBook = mapToBookCardVertical(book);
-        enrichedBook = await fillBookDetailsNaver(enrichedBook);
+        enrichedBook = await fillBookDetailsKakao2(enrichedBook);
 
         if (isBookCardVertical(enrichedBook)) {
           setProcess((prev) => ({

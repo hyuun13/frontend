@@ -8,8 +8,17 @@ export const fillBookDetailsKakao = async <T extends BookBase>(
 
   if (!data.coverImageUrl && data.isbn) {
     try {
-      const response = await axios.get(`/api/kakao?isbn=${data.isbn}`);
-      const kakaoData = response.data;
+      const response = await axios.get(
+        "https://dapi.kakao.com/v3/search/book",
+        {
+          params: { target: "isbn", query: data.isbn },
+          headers: {
+            Authorization: `KakaoAK ${import.meta.env.VITE_KAKAO_API_KEY}`,
+          },
+        }
+      );
+
+      const kakaoData = response.data.documents[0];
 
       if (kakaoData) {
         data.coverImageUrl = kakaoData.thumbnail;
@@ -19,7 +28,7 @@ export const fillBookDetailsKakao = async <T extends BookBase>(
         }
       }
     } catch (error) {
-      console.error("Failed to fetch book details from Kakao API:", error);
+      console.error("카카오 API 호출 실패:", error);
     }
   }
 

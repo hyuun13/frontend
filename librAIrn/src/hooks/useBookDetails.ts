@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchBookDetails } from "../services/bookService";
-import { fillBookDetailsNaver } from "../utils/fillBookDetailsNaver";
+import { fillBookDetailsKakao2 } from "../utils/fillBookDetailsNaver";
 import type { DetailedBook } from "../types/book";
 
 export const useBookDetails = (bookId: string) => {
@@ -28,7 +28,7 @@ export const useBookDetails = (bookId: string) => {
         };
 
         // 네이버 API 데이터 추가
-        const detailedBook = await fillBookDetailsNaver(initialBookData);
+        const detailedBook = await fillBookDetailsKakao2(initialBookData);
         setBook(detailedBook);
       } catch (err) {
         console.error("도서 상세 정보 조회 실패:", err);
