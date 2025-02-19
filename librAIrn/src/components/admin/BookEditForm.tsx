@@ -26,7 +26,9 @@ const BookEditForm: FC<{
   const [arriveZoneName, setArriveZoneName] = useState(
     book.arriveZoneName || "문학"
   );
-  const [bookStatus, setBookStatus] = useState<number>(book.status ?? 0);
+  const [bookStatus, setBookStatus] = useState<number>(
+    Number(book.status) || 0
+  );
 
   const handleSave = async () => {
     try {

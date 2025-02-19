@@ -13,7 +13,7 @@ export const fetchArriveZoneInfo =
   async (): Promise<ArriveZoneResponseDto | null> => {
     try {
       const response = await api.arriveZoneInfo();
-      const filteredData = response.data?.arriveZoneList.filter(
+      const filteredData = (response.data?.arriveZoneList ?? []).filter(
         (zone) => zone.arriveZoneId !== 0
       );
 

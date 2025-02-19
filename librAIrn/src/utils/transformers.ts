@@ -14,15 +14,12 @@ import {
  * @returns User 타입의 객체
  */
 export const mapUserLoginResponseToUser = (
-  response: UserLoginResponseDto,
-  loginId: string
+  response: UserLoginResponseDto
 ): User => {
   return {
-    id: response.userId,
-    name: response.userName,
-    loginId: loginId,
-    email: undefined, // 필요 시 설정
-    status: undefined, // 필요 시 설정
+    userId: response.userId!,
+    userName: response.userName!,
+    isAdmin: response.userId! >= 1 && response.userId! <= 5,
   };
 };
 
