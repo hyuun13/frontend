@@ -102,20 +102,17 @@ export default function RobotHome() {
     },
   ];
   useEffect(() => {
-    // ✅ Step 1: Prevent Back Navigation
     window.history.pushState(null, "", window.location.href);
     const handleBackButton = () => {
       window.history.pushState(null, "", window.location.href);
     };
     window.addEventListener("popstate", handleBackButton);
 
-    // ✅ Step 2: Prevent Leaving or Refreshing
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    // ✅ Step 3: Block Keyboard Shortcuts (F5, Ctrl+R)
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "F5" || (event.ctrlKey && event.key === "r")) {
         event.preventDefault(); // Block refresh
