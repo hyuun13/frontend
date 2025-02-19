@@ -6,8 +6,6 @@ import { fillBookDetailsKakao } from "../utils/fillBookDetailsKakao";
 import { useToast } from "../hooks/useToast";
 import { useLocation } from "react-router-dom";
 
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
 const Home: FC = () => {
   const [weeklyBooks, setWeeklyBooks] = useState<any[]>([]);
   const [monthlyBooks, setMonthlyBooks] = useState<any[]>([]);
@@ -33,25 +31,6 @@ const Home: FC = () => {
     const fetchBooks = async () => {
       setLoading(true);
       setError(null);
-      // Check if cached data exists and is still valid (less than one week old)
-      const cachedDataStr = localStorage.getItem("bookCache");
-      if (cachedDataStr) {
-        try {
-          const cachedData = JSON.parse(cachedDataStr);
-          const { weeklyBooks, monthlyBooks, timestamp } = cachedData;
-          if (Date.now() - timestamp < ONE_WEEK_MS) {
-            // Cached data is valid, so use it
-            setWeeklyBooks(weeklyBooks);
-            setMonthlyBooks(monthlyBooks);
-            setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error("Error parsing cached data", error);
-        }
-      }
-
-      // If no valid cache exists, fetch fresh data
       try {
         const [weeklyResponse, monthlyResponse] = await Promise.all([
           bookMostService(0),
@@ -94,14 +73,6 @@ const Home: FC = () => {
 
         setWeeklyBooks(filledWeeklyBooks);
         setMonthlyBooks(filledMonthlyBooks);
-
-        // Cache the data along with a timestamp
-        const cacheData = {
-          weeklyBooks: filledWeeklyBooks,
-          monthlyBooks: filledMonthlyBooks,
-          timestamp: Date.now(),
-        };
-        localStorage.setItem("bookCache", JSON.stringify(cacheData));
       } catch (err) {
         console.error("대출 순위 데이터를 가져오는 중 오류 발생:", err);
         setError("대출 순위를 불러오는 중 오류가 발생했습니다.");
