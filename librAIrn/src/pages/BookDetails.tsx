@@ -1,9 +1,11 @@
 // src/pages/BookDetail.tsx
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useBookDetails } from "../hooks/useBookDetails";
 import { formatDate } from "../utils/formatters";
 import { DetailedBook } from "../types/book";
+import { useAuth } from "../hooks/useAuth";
+import BookEditForm from "../components/admin/BookEditForm";
 
 const LoadingState: FC = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -58,24 +60,50 @@ const NotFoundState: FC = () => (
 const BookDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { book, loading, error } = useBookDetails(id || "");
+  const { user } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
-
   if (!book) return <NotFoundState />;
 
   return (
-    <div>
-      <div className="relative min-h-screen p-4 overflow-hidden bg-transparent mt-10 sm:p-6 lg:p-8">
-        <BlurryBackground imageUrl={book.coverImageUrl} />
-        <div className="container relative z-10 mx-auto">
-          <div className="md:flex md:items-center md:space-x-6">
-            <BookCover imageUrl={book.coverImageUrl} title={book.title} />
-            <div className="w-full overflow-hidden transition-all duration-300 bg-white shadow-xl backdrop-blur-md rounded-xl hover:shadow-xl">
+    <div className="relative min-h-screen p-4 overflow-hidden bg-transparent mt-10 sm:p-6 lg:p-8">
+      <BlurryBackground imageUrl={book.coverImageUrl} />
+
+      <div className="container relative z-10 mx-auto">
+        <div className="md:flex md:items-center md:space-x-6">
+          <BookCover imageUrl={book.coverImageUrl} title={book.title} />
+
+          {/* ✅ Show Book Info OR Edit Form */}
+          <div className="w-full overflow-hidden transition-all duration-300 bg-white shadow-xl backdrop-blur-md rounded-xl hover:shadow-xl">
+            {isEditing ? (
+              <BookEditForm book={book} setIsEditing={setIsEditing} />
+            ) : (
               <BookInfo book={book} />
-            </div>
+            )}
           </div>
         </div>
+
+        {user?.isAdmin && (
+          <div className="mt-4 flex items-center justify-center space-x-2">
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors  ${
+                isEditing ? "bg-orange" : "bg-gray-200"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isEditing ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className="text-sm font-medium text-gray-700">
+              {isEditing ? "수정 모드" : "보기 모드"}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

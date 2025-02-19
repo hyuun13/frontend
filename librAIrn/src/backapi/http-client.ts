@@ -65,6 +65,9 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
+  // Holds the ongoing refresh promise (if any)
+  private refreshTokenPromise: Promise<string> | null = null;
+
   constructor({
     securityWorker,
     secure,
@@ -80,6 +83,7 @@ export class HttpClient<SecurityDataType = unknown> {
     //jwt 추가
     this.instance.interceptors.request.use((config) => {
       const token = localStorage.getItem("token");
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -87,48 +91,66 @@ export class HttpClient<SecurityDataType = unknown> {
     });
 
     // 응답 인터셉터: 401 발생 시 토큰 갱신 처리
-    // this.instance.interceptors.response.use(
-    //   (response) => response,
-    //   async (error) => {
-    //     const originalRequest = error.config;
+    this.instance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
 
-    //     // `originalRequest`가 없거나 `_retry`가 이미 설정되었으면 종료
-    //     if (!originalRequest || originalRequest._retry) {
-    //       return Promise.reject(error);
-    //     }
-    //     if (error.response?.status === 401) {
-    //       console.log("Access Token 만료, 새로운 토큰 요청");
+        // `originalRequest`가 없거나 `_retry`가 이미 설정되었으면 종료
+        if (!originalRequest || originalRequest._retry) {
+          return Promise.reject(error);
+        }
+        // IMPORTANT: Exclude the refresh endpoint from this interceptor.
+        if (originalRequest.url && originalRequest.url.includes("/api/token")) {
+          // If the refresh endpoint itself fails, do not attempt another refresh.
+          return Promise.reject(error);
+        }
+        if (error.response?.status === 401) {
+          console.log("Access Token 만료, 새로운 토큰 요청");
+          originalRequest._retry = true; // 리트라이 방지 플래그
 
-    //       originalRequest._retry = true; // 리트라이 방지 플래그
+          try {
+            // If no refresh is in progress, start one.
+            if (!this.refreshTokenPromise) {
+              this.refreshTokenPromise = (async () => {
+                const api = new Api();
+                // Call the refresh endpoint; refresh token is sent via HttpOnly cookie.
+                const refreshResponse = await api.validateRefreshToken();
 
-    //       try {
-    //         const api = new Api();
-    //         const refreshResponse = await api.validateRefreshToken();
+                // Extract new access token from response headers.
+                const newAccessToken =
+                  refreshResponse.headers["authorization"]?.split("Bearer ")[1];
 
-    //         //  새로운 Access Token 가져오기
-    //         const newAccessToken =
-    //           refreshResponse.headers["authorization"]?.split("Bearer ")[1];
+                if (!newAccessToken) {
+                  throw new Error("새로운 Access Token을 찾을 수 없음");
+                }
 
-    //         if (!newAccessToken) {
-    //           throw new Error("새로운 Access Token을 찾을 수 없음");
-    //         }
+                // Store and update the new token.
+                localStorage.setItem("token", newAccessToken);
+                this.instance.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
 
-    //         //  새로운 토큰 저장
-    //         localStorage.setItem("token", newAccessToken);
-    //         this.instance.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+                return newAccessToken;
+              })();
+            }
 
-    //         // 기존 요청에 새 토큰 추가 후 재시도
-    //         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-    //         return this.instance(originalRequest);
-    //       } catch (refreshError) {
-    //         console.error("토큰 갱신 실패:", refreshError);
-    //         return this.logoutAndRedirect();
-    //       }
-    //     }
+            // Wait for the refresh token promise to resolve.
+            const newAccessToken = await this.refreshTokenPromise;
 
-    //     return Promise.reject(error);
-    //   }
-    // );
+            // Update the original request's header and retry it.
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return this.instance(originalRequest);
+          } catch (refreshError) {
+            console.error("토큰 갱신 실패:", refreshError);
+            return this.logoutAndRedirect();
+          } finally {
+            // Clear the refresh promise after it settles.
+            this.refreshTokenPromise = null;
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
 
     this.secure = secure;
     this.format = format;
@@ -215,20 +237,13 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
+    if (type === ContentType.FormData && body instanceof FormData) {
+      // No changes needed, send as-is
+    } else if (
+      type === ContentType.Json &&
       body &&
       body !== null &&
       typeof body === "object"
-    ) {
-      body = this.createFormData(body as Record<string, unknown>);
-    }
-
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
     ) {
       body = JSON.stringify(body);
     }
@@ -237,7 +252,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type ? { "Content-Type": type } : {}),
+        ...(type === ContentType.FormData ? {} : { "Content-Type": type }), // Let Axios set the correct boundary
       },
       params: query,
       responseType: responseFormat,

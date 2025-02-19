@@ -74,7 +74,6 @@ export default function RobotHome() {
   const robotIdMatch = rawRobotId?.match(/(\d+)$/);
   const robotId = robotIdMatch ? Number(robotIdMatch[1]) : NaN;
 
-  // 책 관련 상태와 현재 단계를 하나의 객체로 관리
   const [process, setProcess] = useState<ProcessState>(initialProcessState);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -102,6 +101,34 @@ export default function RobotHome() {
       isActive: process.currentStep === 3,
     },
   ];
+  useEffect(() => {
+    // ✅ Step 1: Prevent Back Navigation
+    window.history.pushState(null, "", window.location.href);
+    const handleBackButton = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", handleBackButton);
+
+    // ✅ Step 2: Prevent Leaving or Refreshing
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // ✅ Step 3: Block Keyboard Shortcuts (F5, Ctrl+R)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "F5" || (event.ctrlKey && event.key === "r")) {
+        event.preventDefault(); // Block refresh
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (errorMessage) {
@@ -115,7 +142,6 @@ export default function RobotHome() {
 
   useEffect(() => {
     if (process.userInfo) {
-      // 회원 정보가 설정되면 currentStep을 2로 업데이트
       setProcess((prev) => ({ ...prev, currentStep: 2 }));
     }
   }, [process.userInfo]);
@@ -134,7 +160,6 @@ export default function RobotHome() {
     setErrorMessage(null);
   };
 
-  // 책 인식 (book) 관련 상태를 원자적으로 업데이트
   const handleBookRecognition = async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -146,7 +171,6 @@ export default function RobotHome() {
         enrichedBook = await fillBookDetailsNaver(enrichedBook);
 
         if (isBookCardVertical(enrichedBook)) {
-          // bookInfo와 currentStep을 한 번에 업데이트
           setProcess((prev) => ({
             ...prev,
             bookInfo: enrichedBook,
@@ -156,10 +180,7 @@ export default function RobotHome() {
           setErrorMessage("도서 정보가 올바르지 않습니다.");
         }
       },
-      () =>
-        setErrorMessage(
-          "도서 정보를 가져오는 데 실패했습니다. 다시 시도해주세요."
-        )
+      () => setErrorMessage("다시 시도해주세요.")
     ).finally(() => setIsLoading(false));
   };
 

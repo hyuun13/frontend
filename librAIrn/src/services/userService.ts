@@ -40,9 +40,6 @@ export const userLoginService = async (
       ? authHeader.split("Bearer ")[1]
       : null;
 
-    console.log("JWT Token:", token);
-    console.log("Login Response Body:", response.data);
-
     if (
       response.data &&
       typeof response.data.userId === "number" &&
@@ -50,7 +47,6 @@ export const userLoginService = async (
       token
     ) {
       const { userId, userName } = response.data;
-
       const isAdmin = userId >= 1 && userId <= 5;
 
       localStorage.setItem("token", token);

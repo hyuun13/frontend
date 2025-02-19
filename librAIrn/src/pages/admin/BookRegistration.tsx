@@ -1,4 +1,3 @@
-// src/pages/admin/BookRegistration.tsx
 import { FC, useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { updateBookService } from "../../services/bookService";
@@ -8,19 +7,19 @@ const BookRegistration: FC = () => {
   const navigate = useNavigate();
 
   // 각 입력값 상태
-  const [bookId, setBookId] = useState<string>(""); // 책 바코드 입력 필드 추가
+  const [bookId, setBookId] = useState<string>("");
   const [bookIsbn, setBookIsbn] = useState<string>("");
   const [bookTitle, setBookTitle] = useState<string>("");
   const [bookWriter, setBookWriter] = useState<string>("");
   const [bookPublisher, setBookPublisher] = useState<string>("");
-  const [bookStatus, setBookStatus] = useState<number>(1); // 기본값 1 (대출 가능)
+  const [bookStatus, setBookStatus] = useState<number>(1);
   const [bookSign, setBookSign] = useState<string>("");
   const [arriveZoneName, setArriveZoneName] = useState<string>("");
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 각 입력값 변경 핸들러
+  // 핸들러 함수
   const handleBookIdChange = (e: ChangeEvent<HTMLInputElement>) =>
     setBookId(e.target.value);
   const handleIsbnChange = (e: ChangeEvent<HTMLInputElement>) =>
@@ -31,18 +30,16 @@ const BookRegistration: FC = () => {
     setBookWriter(e.target.value);
   const handlePublisherChange = (e: ChangeEvent<HTMLInputElement>) =>
     setBookPublisher(e.target.value);
-  // 콤보박스 변경 핸들러: value는 숫자형 문자열로 오므로 Number() 변환
   const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) =>
     setBookStatus(Number(e.target.value));
   const handleSignChange = (e: ChangeEvent<HTMLInputElement>) =>
     setBookSign(e.target.value);
-  const handleArriveZoneChange = (e: ChangeEvent<HTMLInputElement>) =>
+  const handleArriveZoneChange = (e: ChangeEvent<HTMLSelectElement>) =>
     setArriveZoneName(e.target.value);
 
-  // 폼 제출 핸들러: 도서 등록 시 bookId(바코드)도 입력받음
+  // 폼 제출 핸들러
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // 필수 항목 체크: 책 바코드(bookId), ISBN, 제목은 필수
     if (
       !bookId.trim() ||
       !bookIsbn.trim() ||
@@ -57,7 +54,7 @@ const BookRegistration: FC = () => {
     setLoading(true);
 
     const payload: BookUpdateRequestDto = {
-      bookId, // 책 바코드를 payload에 포함합니다.
+      bookId,
       bookIsbn,
       bookTitle,
       bookWriter,
@@ -65,14 +62,14 @@ const BookRegistration: FC = () => {
       bookStatus,
       bookSign,
       arriveZoneName,
-      action: 0, // 0은 신규 등록
+      action: 0,
     };
 
     try {
       const res = await updateBookService(payload);
       if (res && res.isDone) {
         alert("도서 등록이 완료되었습니다.");
-        navigate("/"); // 등록 후 목록 페이지 등 원하는 경로로 이동
+        navigate("/");
       } else {
         setError("도서 등록에 실패했습니다.");
       }
@@ -89,7 +86,6 @@ const BookRegistration: FC = () => {
       <div className="container max-w-lg px-4 mx-auto">
         {error && <p className="mb-4 text-red-500">{error}</p>}
         <form onSubmit={handleSubmit} className="p-6 rounded bg-snow">
-          {/* 책 바코드 입력 필드 */}
           <div className="mb-4">
             <label className="block mb-1 text-lg font-bold" htmlFor="bookId">
               책 바코드
@@ -164,7 +160,6 @@ const BookRegistration: FC = () => {
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
-          {/* 상태 콤보박스 */}
           <div className="mb-4">
             <label
               className="block mb-1 text-lg font-bold"
@@ -196,6 +191,7 @@ const BookRegistration: FC = () => {
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
+          {/* ✅ Change Arrive Zone Name to Dropdown */}
           <div className="mb-6">
             <label
               className="block mb-1 text-lg font-bold"
@@ -203,14 +199,24 @@ const BookRegistration: FC = () => {
             >
               회수 구역 이름
             </label>
-            <input
-              type="text"
+            <select
               id="arriveZoneName"
               value={arriveZoneName}
               onChange={handleArriveZoneChange}
-              placeholder="회수 구역 이름"
               className="w-full p-2 border border-gray-300 rounded"
-            />
+            >
+              <option value="">회수 구역 선택</option>
+              <option value="총류">총류</option>
+              <option value="철학">철학</option>
+              <option value="종교">종교</option>
+              <option value="사회과학">사회과학</option>
+              <option value="자연과학">자연과학</option>
+              <option value="기술과학">기술과학</option>
+              <option value="예술">예술</option>
+              <option value="언어">언어</option>
+              <option value="문학">문학</option>
+              <option value="역사">역사</option>
+            </select>
           </div>
           <button
             type="submit"

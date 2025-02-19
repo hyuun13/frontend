@@ -13,7 +13,14 @@ export const fetchArriveZoneInfo =
   async (): Promise<ArriveZoneResponseDto | null> => {
     try {
       const response = await api.arriveZoneInfo();
-      return response.data;
+      const filteredData = response.data?.arriveZoneList.filter(
+        (zone) => zone.arriveZoneId !== 0
+      );
+
+      return {
+        ...response.data,
+        arriveZoneList: filteredData,
+      };
     } catch (error) {
       console.error("회수 구역 정보 조회 실패:", error);
       return null;

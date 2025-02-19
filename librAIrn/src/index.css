@@ -1,6 +1,13 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
 
+html,
+body {
+  font-family: "Pretendard", sans-serif;
+}
+
 @theme {
+  --font-sans: "Pretendard", sans-serif;
   --color-orange: #fe623a; /* 메인 색상 (기본 오렌지) */
   --color-orange-hover: #e6542e; /* 호버 시 더 짙은 오렌지 */
   --color-orange-disabled: #fbb8a4; /* 비활성화 시 연한 오렌지 */

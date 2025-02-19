@@ -26,6 +26,7 @@ const RobotRegistration: FC = () => {
   // 등록 폼 제출 핸들러
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!robotName.trim()) {
       setError("로봇 이름을 입력해주세요.");
       return;
@@ -34,17 +35,22 @@ const RobotRegistration: FC = () => {
       setError("로봇 이미지를 선택해주세요.");
       return;
     }
+
     setError(null);
     setLoading(true);
+
     try {
-      // API 호출을 위한 payload 구성
-      const payload = {
-        robotInsertRequestDto: {
-          robotName: robotName,
-        },
-        robotImage: robotImage,
-      };
-      const res = await insertRobotService(payload);
+      // ✅ Create FormData instead of JSON object
+      const formData = new FormData();
+      formData.append("robotImage", robotImage); // File
+      formData.append(
+        "robotInsertRequestDto",
+        new Blob([JSON.stringify({ robotName })], { type: "application/json" }) // JSON as Blob
+      );
+
+      // ✅ Call API with FormData
+      const res = await insertRobotService(formData);
+
       if (res && res.isDone) {
         alert("로봇 등록이 완료되었습니다.");
         navigate("/admin/robots");

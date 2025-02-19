@@ -19,7 +19,12 @@ const RobotDetail: FC = () => {
 
   const [robot, setRobot] = useState<Robot | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    robot?.imageUrl || null
+  );
   const [editedName, setEditedName] = useState<string>("");
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fullLogs, setFullLogs] = useState<RobotLog[]>([]);
@@ -114,6 +119,14 @@ const RobotDetail: FC = () => {
     return () => observer.disconnect();
   }, [logsLoading, displayedLogs, fullLogs]);
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setEditedName(e.target.value);
   };
@@ -131,17 +144,30 @@ const RobotDetail: FC = () => {
       return;
     }
     try {
-      const payload = {
-        robotUpdateRequestDto: {
-          robotId: robot.id,
-          robotName: editedName,
-        },
-        robotImage: new File([], "dummy.png", { type: "image/png" }),
-      };
-      const res = await updateRobotService(payload);
+      const formData = new FormData();
+      formData.append(
+        "robotUpdateRequestDto",
+        new Blob(
+          [JSON.stringify({ robotId: robot.id, robotName: editedName })],
+          {
+            type: "application/json",
+          }
+        )
+      );
+      if (selectedFile) {
+        formData.append("robotImage", selectedFile); // Attach new image if selected
+      }
+
+      const res = await updateRobotService(formData);
       if (res && res.isDone) {
         alert("로봇 정보가 업데이트되었습니다.");
-        setRobot({ ...robot, name: editedName });
+        setRobot({
+          ...robot,
+          name: editedName,
+          imageUrl: selectedFile
+            ? URL.createObjectURL(selectedFile)
+            : robot.imageUrl,
+        });
         setIsEditing(false);
       } else {
         alert("로봇 정보 업데이트에 실패했습니다.");
@@ -219,7 +245,7 @@ const RobotDetail: FC = () => {
               {isEditing ? (
                 <div className="mb-4">
                   <label className="block mb-2 text-lg font-semibold text-gray-700">
-                    로봇 이름:
+                    로봇 이름
                     <input
                       type="text"
                       value={editedName}
@@ -227,15 +253,24 @@ const RobotDetail: FC = () => {
                       className="block w-full p-2 mt-1  rounded-md focus:ring-blue-500 focus:border-blue-500"
                     />
                   </label>
+                  <label className="block mt-4 text-lg font-semibold text-gray-700">
+                    로봇 이미지 변경
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="mt-2"
+                    />
+                  </label>
+
+                  {previewImage && (
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-40 h-40 mt-2 rounded-lg shadow-md"
+                    />
+                  )}
                   <div className="mt-4 space-x-2">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleSave}
-                      className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-                    >
-                      저장
-                    </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -243,6 +278,14 @@ const RobotDetail: FC = () => {
                       className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
                     >
                       취소
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSave}
+                      className="px-4 py-2 text-white bg-blue rounded-md hover:bg-blue-hover focus:outline-none focus:ring-2 focus:ring-blue focus:ring-opacity-50"
+                    >
+                      저장
                     </motion.button>
                   </div>
                 </div>
@@ -255,7 +298,7 @@ const RobotDetail: FC = () => {
                   <p className="mt-2 text-xl text-gray-600">
                     상태: {robot.status}
                   </p>
-                  <div className="mt-6 space-x-2">
+                  <div className="mt-6 flex space-x-2">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -281,7 +324,7 @@ const RobotDetail: FC = () => {
                       className="inline-flex items-center px-4 py-2 text-white bg-peach rounded-md hover:bg-peach-hover "
                     >
                       <Monitor size={18} className="mr-2" />
-                      로봇 화면 켜기
+                      로봇 화면
                     </motion.button>
                   </div>
                 </div>
@@ -343,7 +386,7 @@ const RobotDetail: FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: idx * 0.05 }}
-                        className="p-4 bg-snow  rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                        className="p-4 bg-white  rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                       >
                         <p className="font-semibold text-gray-800">
                           {log.type}

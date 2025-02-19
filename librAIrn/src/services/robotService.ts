@@ -4,7 +4,6 @@ import type {
   RobotResponseDto,
   UpdateRobotPayload,
   UpdateRobotData,
-  InsertRobotPayload,
   InsertRobotData,
   RobotDeleteRequestDto,
   DeleteRobotData,
@@ -42,10 +41,10 @@ export const updateRobotService = async (
 
 /** 로봇 정보 추가 */
 export const insertRobotService = async (
-  data: InsertRobotPayload
+  formData: FormData
 ): Promise<InsertRobotData | null> => {
   try {
-    const response = await api.insertRobot(data);
+    const response = await api.insertRobot(formData);
     return response.data;
   } catch (error) {
     console.error("로봇 추가 실패:", error);

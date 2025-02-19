@@ -30,4 +30,5 @@ export interface DetailedBook extends BookBase {
   plannedReturnDate?: string; // 반납 예정일 (ISO 날짜 문자열)
   description?: string;
   status: string;
+  arriveZoneName?: string;
 }
