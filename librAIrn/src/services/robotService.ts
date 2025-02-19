@@ -28,7 +28,7 @@ export const fetchRobotList = async (): Promise<RobotResponseDto | null> => {
 
 /** 로봇 정보 수정 */
 export const updateRobotService = async (
-  data: UpdateRobotPayload
+  data: UpdateRobotPayload | FormData
 ): Promise<UpdateRobotData | null> => {
   try {
     const response = await api.updateRobot(data);

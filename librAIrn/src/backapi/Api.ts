@@ -76,7 +76,9 @@ import {
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
-export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType = unknown,
+> extends HttpClient<SecurityDataType> {
   /**
    * @description 관리자가 로봇 현황 배너를 클릭하면 요청되는 API 입니다.
    *
@@ -101,7 +103,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request PUT:/api/robot
    * @response `200` `UpdateRobotData` OK
    */
-  updateRobot = (data: UpdateRobotPayload, params: RequestParams = {}) =>
+  updateRobot = (
+    data: UpdateRobotPayload | FormData,
+    params: RequestParams = {}
+  ) =>
     this.request<UpdateRobotData, any>({
       path: `/api/robot`,
       method: "PUT",
@@ -118,7 +123,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/robot
    * @response `200` `InsertRobotData` OK
    */
-  insertRobot = (data: InsertRobotPayload, params: RequestParams = {}) =>
+  insertRobot = (
+    data: InsertRobotPayload | FormData,
+    params: RequestParams = {}
+  ) =>
     this.request<InsertRobotData, any>({
       path: `/api/robot`,
       method: "POST",
@@ -531,7 +539,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/book/robot/start
    * @response `200` `ReturnBookStartData` OK
    */
-  returnBookStart = (data: BookReturnStartRequestDto, params: RequestParams = {}) =>
+  returnBookStart = (
+    data: BookReturnStartRequestDto,
+    params: RequestParams = {}
+  ) =>
     this.request<ReturnBookStartData, any>({
       path: `/api/book/robot/start`,
       method: "POST",
@@ -614,7 +625,10 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
    * @request POST:/api/arrivezone
    * @response `200` `ResetArriveZoneData` OK
    */
-  resetArriveZone = (data: ArriveZoneResetRequestDto, params: RequestParams = {}) =>
+  resetArriveZone = (
+    data: ArriveZoneResetRequestDto,
+    params: RequestParams = {}
+  ) =>
     this.request<ResetArriveZoneData, any>({
       path: `/api/arrivezone`,
       method: "POST",
@@ -636,7 +650,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       /** @format int32 */
       robotId: number;
     },
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<ShowRobotLogData, any>({
       path: `/api/robot/log`,
@@ -674,7 +688,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       /** @format int32 */
       action: number;
     },
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<SearchBook1Data, any>({
       path: `/api/book/user/search`,
@@ -696,7 +710,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
       /** @format int32 */
       action: number;
     },
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<BookMostData, any>({
       path: `/api/book/user/most`,
@@ -717,7 +731,7 @@ export class Api<SecurityDataType = unknown> extends HttpClient<SecurityDataType
     query: {
       bookId: string;
     },
-    params: RequestParams = {},
+    params: RequestParams = {}
   ) =>
     this.request<GetBookDetailData, any>({
       path: `/api/book/user/detail`,
