@@ -191,7 +191,6 @@ const BookRegistration: FC = () => {
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
-          {/* ✅ Change Arrive Zone Name to Dropdown */}
           <div className="mb-6">
             <label
               className="block mb-1 text-lg font-bold"

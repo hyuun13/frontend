@@ -2,8 +2,24 @@ import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRobot } from "../../hooks/useRobot";
 import RobotCard from "../../components/common/RobotCard";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const RobotManagement: FC = () => {
   const { robots, loading, error } = useRobot();
@@ -56,23 +72,23 @@ const RobotManagement: FC = () => {
           </div>
         )}
 
-        <motion.div
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {robots.map((robot, index) => (
+        <AnimatePresence>
+          {!loading && robots.length > 0 && (
             <motion.div
-              key={robot.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
             >
-              <RobotCard robot={robot} />
+              {robots.map((robot) => (
+                <motion.div key={robot.id} variants={itemVariants} layout>
+                  <RobotCard robot={robot} />
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

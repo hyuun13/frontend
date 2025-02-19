@@ -238,7 +238,6 @@ export class HttpClient<SecurityDataType = unknown> {
     const responseFormat = format || this.format || undefined;
 
     if (type === ContentType.FormData && body instanceof FormData) {
-      // No changes needed, send as-is
     } else if (
       type === ContentType.Json &&
       body &&
